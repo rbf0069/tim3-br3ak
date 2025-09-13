@@ -18,13 +18,13 @@
             user-select: none; 
             touch-action: manipulation; 
         }
-        .safe-area-padding {
+        .app-screen {
             padding-top: env(safe-area-inset-top);
             padding-right: env(safe-area-inset-right);
             padding-left: env(safe-area-inset-left);
         }
         .safe-area-padding-bottom {
-            padding-bottom: env(safe-area-inset-bottom);
+             padding-bottom: env(safe-area-inset-bottom);
         }
         .font-title { font-family: 'Orbitron', sans-serif; }
         .font-chrono { font-family: 'Roboto Mono', monospace; }
@@ -58,7 +58,7 @@
     <div id="app-container" class="hidden h-screen w-screen">
     
         <!-- Pantalla Principal -->
-        <div id="main-screen" class="text-center w-full h-full max-w-md mx-auto p-4 flex flex-col items-center justify-center safe-area-padding">
+        <div id="main-screen" class="text-center w-full h-full max-w-md mx-auto p-4 flex flex-col items-center justify-center app-screen">
              <h1 class="font-title text-6xl font-bold mb-8 whitespace-nowrap">TIM<span class="text-red-500">3</span> BR<span class="text-red-500">3</span>AK</h1>
              <div class="flex flex-col space-y-4 w-full items-center">
                  <button id="play-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl py-4 rounded-xl">¡JUGAR!</button>
@@ -73,8 +73,8 @@
         </div>
 
         <!-- Pantalla de Juego -->
-        <div id="game-screen" class="hidden w-full h-full flex flex-col p-4">
-            <header class="flex items-center justify-between mb-6 w-full max-w-md mx-auto flex-shrink-0 safe-area-padding">
+        <div id="game-screen" class="hidden w-full h-full flex flex-col p-4 app-screen">
+            <header class="flex items-center justify-between mb-6 w-full max-w-md mx-auto flex-shrink-0">
                 <button id="exit-button" class="text-3xl font-bold text-gray-400 hover:text-white w-12 text-left">X</button>
                 <div class="flex-grow"></div>
                 <div id="date-display" class="text-sm text-gray-500 text-right"></div>
@@ -94,9 +94,9 @@
             <footer class="text-center text-xs text-gray-500 py-2 flex-shrink-0 safe-area-padding-bottom">Banner de Publicidad</footer>
         </div>
         
-        <!-- El resto de pantallas del juego... -->
-        <div id="how-to-play-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900">
-             <header class="w-full max-w-md mx-auto mb-6 safe-area-padding">
+        <!-- Pantalla Cómo Jugar -->
+        <div id="how-to-play-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
+             <header class="w-full max-w-md mx-auto mb-6">
                 <div class="w-full"><button id="back-to-main-from-how-to-play-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">CÓMO JUGAR</h2>
              </header>
@@ -115,8 +115,10 @@
                 </div>
              </div>
         </div>
-        <div id="ranking-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900">
-            <header class="w-full max-w-md mx-auto mb-6 flex-shrink-0 safe-area-padding">
+
+        <!-- Pantalla Ranking -->
+        <div id="ranking-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
+            <header class="w-full max-w-md mx-auto mb-6 flex-shrink-0">
                 <div class="w-full"><button id="back-to-main-from-ranking-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">RANKING</h2>
             </header>
@@ -130,8 +132,10 @@
             </div>
              <footer class="text-center text-xs text-gray-500 py-2 flex-shrink-0 safe-area-padding-bottom">Banner de Publicidad</footer>
         </div>
-        <div id="settings-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900">
-            <header class="w-full max-w-md mx-auto mb-6 safe-area-padding">
+
+        <!-- Pantalla Ajustes -->
+        <div id="settings-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
+            <header class="w-full max-w-md mx-auto mb-6">
                 <div class="w-full"><button id="back-to-main-from-settings-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">AJUSTES</h2>
             </header>
@@ -156,8 +160,8 @@
                  </div>
              </div>
         </div>
-        <div id="profile-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900">
-            <header class="w-full max-w-md mx-auto mb-6 safe-area-padding">
+        <div id="profile-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
+            <header class="w-full max-w-md mx-auto mb-6">
                 <div class="w-full"><button id="back-to-settings-from-profile-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">EDITAR PERFIL</h2>
             </header>
@@ -178,8 +182,8 @@
                 <button id="save-profile-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl py-3 rounded-xl">Guardar Perfil</button>
             </div>
         </div>
-        <div id="friends-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900">
-            <header class="w-full max-w-md mx-auto mb-6 safe-area-padding">
+        <div id="friends-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
+            <header class="w-full max-w-md mx-auto mb-6">
                 <div class="w-full"><button id="back-to-main-from-friends-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">AMIGOS</h2>
             </header>
@@ -201,8 +205,8 @@
                  <div id="requests-list-container" class="w-full space-y-3 hidden"></div>
             </main>
         </div>
-        <div id="about-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900">
-            <header class="w-full max-w-md mx-auto mb-6 safe-area-padding">
+        <div id="about-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
+            <header class="w-full max-w-md mx-auto mb-6">
                  <div class="w-full"><button id="back-to-main-from-about-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">ACERCA DE</h2>
             </header>
@@ -215,9 +219,36 @@
         </div>
 
         <!-- Pop-ups -->
-        <div id="exit-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10"><div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full"><h2 class="text-2xl font-bold mb-4">¿Quieres salir?</h2><p class="text-gray-400 mb-6">Tu puntuación no se guardará.</p><div class="flex justify-center space-x-4"><button id="confirm-exit-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Salir</button><button id="cancel-exit-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button></div></div></div>
-        <div id="end-game-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10"><div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full"><h2 class="text-2xl font-bold mb-4">¡Partida Terminada!</h2><p class="text-gray-400 mb-6 text-xl">Tu puntuación: <span id="final-score" class="font-bold text-white">0</span></p><div class="flex flex-col space-y-4"><button id="play-again-button" class="action-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg">Jugar de Nuevo</button><button id="main-menu-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg">Menú Principal</button></div></div></div>
-        <div id="reset-data-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10"><div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full"><h2 class="text-2xl font-bold mb-4">¿Reiniciar Puntuaciones?</h2><p class="text-gray-400 mb-6">Se borrarán todas tus puntuaciones. Esta acción no se puede deshacer.</p><div class="flex justify-center space-x-4"><button id="confirm-reset-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Reiniciar</button><button id="cancel-reset-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button></div></div></div>
+        <div id="exit-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
+            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
+                <h2 class="text-2xl font-bold mb-4">¿Quieres salir?</h2>
+                <p class="text-gray-400 mb-6">Tu puntuación no se guardará.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="confirm-exit-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Salir</button>
+                    <button id="cancel-exit-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        <div id="end-game-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
+            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
+                <h2 class="text-2xl font-bold mb-4">¡Partida Terminada!</h2>
+                <p class="text-gray-400 mb-6 text-xl">Tu puntuación: <span id="final-score" class="font-bold text-white">0</span></p>
+                <div class="flex flex-col space-y-4">
+                    <button id="play-again-button" class="action-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg">Jugar de Nuevo</button>
+                    <button id="main-menu-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg">Menú Principal</button>
+                </div>
+            </div>
+        </div>
+        <div id="reset-data-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
+            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
+                <h2 class="text-2xl font-bold mb-4">¿Reiniciar Puntuaciones?</h2>
+                <p class="text-gray-400 mb-6">Se borrarán todas tus puntuaciones. Esta acción no se puede deshacer.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="confirm-reset-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Reiniciar</button>
+                    <button id="cancel-reset-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button>
+                </div>
+            </div>
+        </div>
         
         <!-- Avatares SVG (ocultos) -->
         <div id="avatar-svgs" class="hidden">
