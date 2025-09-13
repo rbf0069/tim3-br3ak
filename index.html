@@ -9,11 +9,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Roboto+Mono:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Previene cualquier scroll no deseado */
+        }
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #111827; 
             color: #F3F4F6; 
-            overflow: hidden; 
             -webkit-user-select: none; 
             user-select: none; 
             touch-action: manipulation; 
@@ -36,7 +40,7 @@
         .avatar-selected { outline: 2px solid #34D399; background-color: #374151; }
     </style>
 </head>
-<body class="flex items-center justify-center h-screen">
+<body class="flex items-center justify-center h-screen w-screen">
 
     <!-- Pantalla de Bloqueo con Contraseña -->
     <div id="password-protection-screen" class="w-full max-w-sm mx-auto p-6 bg-gray-900 rounded-2xl shadow-lg z-50">
@@ -59,7 +63,7 @@
     
         <!-- Pantalla Principal -->
         <div id="main-screen" class="text-center w-full h-full max-w-md mx-auto p-4 flex flex-col items-center justify-center app-screen">
-             <h1 class="font-title text-6xl font-bold mb-8 whitespace-nowrap">TIM<span class="text-red-500">3</span> BR<span class="text-red-500">3</span>AK</h1>
+             <h1 class="font-title text-5xl sm:text-6xl font-bold mb-8 whitespace-nowrap">TIM<span class="text-red-500">3</span> BR<span class="text-red-500">3</span>AK</h1>
              <div class="flex flex-col space-y-4 w-full items-center">
                  <button id="play-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl py-4 rounded-xl">¡JUGAR!</button>
                  <button id="friends-button" class="action-button w-full max-w-xs bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">AMIGOS</button>
@@ -212,7 +216,7 @@
             </header>
              <div class="flex-grow text-gray-300 space-y-6 overflow-y-auto text-sm max-w-md mx-auto safe-area-padding-bottom">
                 <h3 class="text-xl font-bold text-white">Versión de la App</h3>
-                <p>TIM3 BR3AK v1.3.2 (Corrección Móvil)</p>
+                <p>TIM3 BR3AK v1.3.3 (Corrección Móvil Definitiva)</p>
                 <h3 class="text-xl font-bold text-white">Términos y Condiciones</h3><p>Lorem ipsum dolor sit amet...</p>
                 <h3 class="text-xl font-bold text-white">Política de Privacidad</h3><p>Vestibulum lacinia arcu eget nulla...</p>
              </div>
