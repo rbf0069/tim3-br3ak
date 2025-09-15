@@ -118,12 +118,25 @@ function mainApp() {
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
 
+    // --- FUNCIÓN DE FIREBASE CORREGIDA ---
     async function initializeFirebase() {
         try {
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            // Tu configuración de Firebase, ¡ahora integrada!
+            const firebaseConfig = {
+              apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
+              authDomain: "tim3-br3ak.firebaseapp.com",
+              projectId: "tim3-br3ak",
+              storageBucket: "tim3-br3ak.appspot.com",
+              messagingSenderId: "1029726018714",
+              appId: "1:1029726018714:web:16ed60f60bdf57ebe2d323",
+              measurementId: "G-VGSD8GC449"
+            };
+
+            // El resto del código que ya teníamos
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
@@ -133,11 +146,14 @@ function mainApp() {
                 }
                 isAuthReady = true;
             });
+            
             await signInAnonymously(auth);
+
         } catch (error) {
             console.error("Firebase initialization failed:", error);
         }
     }
+    // --- FIN DE LA FUNCIÓN CORREGIDA ---
 
     initializeAppUI();
     initializeFirebase();
@@ -281,7 +297,6 @@ function mainApp() {
     }
 
     function getAvatarSvg(avatarId) {
-        // Tuve que quitar la parte de los avatares que estaba en el HTML y pegarla aquí
         const avatarSvgs = {
             'avatar-circle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>',
             'avatar-square': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>',
@@ -338,36 +353,23 @@ function mainApp() {
             }
         }
     }
-
-    function resetGame() { /* ... */ } // Resto de funciones sin cambios
-    function startGameFlow() { /* ... */ }
-    function setupAttemptsIndicator() { /* ... */ }
-    function updateAttemptsIndicator() { /* ... */ }
-    function updateChronometer() { /* ... */ }
-    function updateChronometerDisplay() { /* ... */ }
-    function showScoreFeedback(text) { /* ... */ }
-    function calculateScore() { /* ... */ }
-    async function endGame(reason) { /* ... */ }
-    function handleActionClick() { /* ... */ }
-    async function displayRanking() { /* ... */ }
-    function updateSettingsUI() { /* ... */ }
-    function switchFriendsTab(activeTab) { /* ... */ }
-    async function searchPlayers(searchTerm) { /* ... */ }
-    async function sendFriendRequest(button) { /* ... */ }
-    function listenToFriendRequests() { /* ... */ }
-    async function handleFriendRequest(requestId, status) { /* ... */ }
-
+    
+    // El resto de las funciones de la app (resetGame, startGameFlow, etc.)
+    // ...
+    // Aquí irían todas las demás funciones que no hemos tocado
+    // ...
 
     // --- EVENT LISTENERS ---
     elements.playButton.addEventListener('click', startGameFlow);
-    // ... (El resto de los event listeners no necesitan cambios) ...
+    elements.howToPlayButton.addEventListener('click', () => showScreen(elements.howToPlayScreen));
+    elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
+    // ... etc. ...
     
-
     // Bucle para crear la galería de avatares - VERSIÓN CORREGIDA
     AVATAR_IDS.forEach(id => {
         const avatarContainer = document.createElement('div');
         avatarContainer.dataset.avatarId = id;
-        avatarContainer.className = 'avatar-container p-2 rounded-lg cursor-pointer hover:bg-gray-700'; // CLASE AÑADIDA
+        avatarContainer.className = 'avatar-container p-2 rounded-lg cursor-pointer hover:bg-gray-700';
         const svg = getAvatarSvg(id);
         if (svg) {
             avatarContainer.appendChild(svg);
