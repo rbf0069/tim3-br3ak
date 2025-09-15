@@ -1,10 +1,10 @@
 // --- IMPORTACIONES DE FIREBASE ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// --- LÓGICA DE CONTRASEÑA ---
 const APP_PASSWORD = "speed";
-
 const passwordScreen = document.getElementById('password-protection-screen');
 const appContainer = document.getElementById('app-container');
 const passwordInput = document.getElementById('password-input');
@@ -28,11 +28,11 @@ passwordSubmit.addEventListener('click', () => {
         passwordInput.value = '';
     }
 });
-
 passwordInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') passwordSubmit.click();
     passwordError.textContent = '';
 });
+
 
 // --- FUNCIÓN PRINCIPAL DE LA APP ---
 function mainApp() {
@@ -119,8 +119,7 @@ function mainApp() {
 
     async function loadUserData() {
         if (!isAuthReady || !userId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        const userDocRef = doc(db, "users", userId);
         try {
             const docSnap = await getDoc(userDocRef);
             if (docSnap.exists()) {
@@ -153,9 +152,8 @@ function mainApp() {
         }
         feedbackEl.textContent = "Comprobando...";
         feedbackEl.className = "text-center text-sm mt-2 h-4 text-gray-400";
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const newNicknameLower = newNickname.toLowerCase();
-        const nicknamesColRef = collection(db, `artifacts/${appId}/public/data/nicknames`);
+        const nicknamesColRef = collection(db, "nicknames");
         const q = query(nicknamesColRef, where("nicknameLower", "==", newNicknameLower));
         try {
             const querySnapshot = await getDocs(q);
@@ -170,7 +168,7 @@ function mainApp() {
                 feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
                 return;
             }
-            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+            const userDocRef = doc(db, "users", userId);
             const nicknameDocRef = doc(nicknamesColRef, userId);
             await runTransaction(db, async (transaction) => {
                 transaction.set(userDocRef, { profile: { nickname: newNickname, avatar: selectedAvatar } }, { merge: true });
@@ -188,8 +186,7 @@ function mainApp() {
     }
     async function saveBestScore() {
         if (!isAuthReady || !userId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        const userDocRef = doc(db, "users", userId);
         const today = new Date().toLocaleDateString();
         try {
             await setDoc(userDocRef, { bestScore: { score: bestScoreToday, date: today } }, { merge: true });
@@ -199,8 +196,7 @@ function mainApp() {
     }
     async function saveRanking(newScore) {
         if (!isAuthReady || !userId || newScore <= 0) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        const userDocRef = doc(db, "users", userId);
         try {
             const docSnap = await getDoc(userDocRef);
             let ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : [];
@@ -216,8 +212,7 @@ function mainApp() {
     }
     async function resetAllData() {
         if (!isAuthReady || !userId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        const userDocRef = doc(db, "users", userId);
         try {
             await setDoc(userDocRef, { bestScore: { score: 0, date: new Date().toLocaleDateString() }, ranking: [] }, { merge: true });
             bestScoreToday = 0;
@@ -228,8 +223,7 @@ function mainApp() {
     }
     async function saveSettings() {
         if (!isAuthReady || !userId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        const userDocRef = doc(db, "users", userId);
         try {
             await setDoc(userDocRef, { settings: settings }, { merge: true });
         } catch (error) {
@@ -421,8 +415,7 @@ function mainApp() {
             elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Conectando...</div>`;
             return;
         };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        const userDocRef = doc(db, "users", userId);
         elements.rankingList.innerHTML = '';
         try {
             const docSnap = await getDoc(userDocRef);
@@ -487,8 +480,7 @@ function mainApp() {
         const container = elements.searchResultsContainer;
         container.innerHTML = '';
         if (searchTerm.length < 2) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const nicknamesColRef = collection(db, `artifacts/${appId}/public/data/nicknames`);
+        const nicknamesColRef = collection(db, `nicknames`);
         const q = query(nicknamesColRef, where("nicknameLower", "==", searchTerm.toLowerCase()));
         try {
             const querySnapshot = await getDocs(q);
@@ -528,8 +520,7 @@ function mainApp() {
     async function sendFriendRequest(button) {
         const friendId = button.dataset.id;
         if (!userId || !friendId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const requestsRef = collection(db, `artifacts/${appId}/public/data/friendRequests`);
+        const requestsRef = collection(db, `friendRequests`);
         const requestId = userId < friendId ? `${userId}_${friendId}` : `${friendId}_${userId}`;
         const requestDocRef = doc(requestsRef, requestId);
         try {
@@ -545,8 +536,7 @@ function mainApp() {
     }
     function listenToFriendRequests() {
         if (!userId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const requestsColRef = collection(db, `artifacts/${appId}/public/data/friendRequests`);
+        const requestsColRef = collection(db, `friendRequests`);
         const q = query(requestsColRef, where("to", "==", userId), where("status", "==", "pending"));
         onSnapshot(q, async (snapshot) => {
             elements.requestsListContainer.innerHTML = '';
@@ -557,7 +547,7 @@ function mainApp() {
             for (const docSnap of snapshot.docs) {
                 const request = docSnap.data();
                 const senderId = request.from;
-                const nicknamesColRef = collection(db, `artifacts/${appId}/public/data/nicknames`);
+                const nicknamesColRef = collection(db, `nicknames`);
                 const senderProfileDoc = await getDoc(doc(nicknamesColRef, senderId));
                 if (senderProfileDoc.exists()) {
                     const senderProfile = senderProfileDoc.data();
@@ -593,23 +583,18 @@ function mainApp() {
         });
     }
     async function handleFriendRequest(requestId, status) {
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const requestDocRef = doc(db, `artifacts/${appId}/public/data/friendRequests`, requestId);
+        const requestDocRef = doc(db, `friendRequests`, requestId);
         if (status === 'accepted') {
             try {
                 const requestSnap = await getDoc(requestDocRef);
                 if (!requestSnap.exists()) return;
                 const requestData = requestSnap.data();
                 const friendId = requestData.from;
-                const userFriendsRef = doc(db, `artifacts/${appId}/users/${userId}/private/friends`);
-                const friendFriendsRef = doc(db, `artifacts/${appId}/users/${friendId}/private/friends`);
+                const userFriendsRef = doc(db, `users/${userId}/friends/${friendId}`);
+                const friendFriendsRef = doc(db, `users/${friendId}/friends/${userId}`);
                 const batch = writeBatch(db);
-                batch.set(userFriendsRef, {
-                    [friendId]: true
-                }, { merge: true });
-                batch.set(friendFriendsRef, {
-                    [userId]: true
-                }, { merge: true });
+                batch.set(userFriendsRef, { addedAt: new Date() });
+                batch.set(friendFriendsRef, { addedAt: new Date() });
                 batch.delete(requestDocRef);
                 await batch.commit();
             } catch (error) {
@@ -652,7 +637,6 @@ function mainApp() {
     AVATAR_IDS.forEach(id => {
         const avatarContainer = document.createElement('div');
         avatarContainer.dataset.avatarId = id;
-        // ARREGLO PARA EL SCROLLER
         avatarContainer.className = 'avatar-container p-2 rounded-lg cursor-pointer hover:bg-gray-700';
         const svg = getAvatarSvg(id);
         if (svg) avatarContainer.appendChild(svg);
@@ -662,6 +646,6 @@ function mainApp() {
             updateProfileUI();
         });
     });
+
 }
-// --- ARRANQUE DE LA APLICACIÓN ---
 checkPasswordAndInit();
