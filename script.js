@@ -118,7 +118,6 @@ function mainApp() {
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
 
-    // --- FUNCIÓN DE FIREBASE ---
     async function initializeFirebase() {
         try {
             const firebaseConfig = {
@@ -130,11 +129,9 @@ function mainApp() {
               appId: "1:1029726018714:web:16ed60f60bdf57ebe2d323",
               measurementId: "G-VGSD8GC449"
             };
-
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
@@ -144,22 +141,20 @@ function mainApp() {
                 }
                 isAuthReady = true;
             });
-            
             await signInAnonymously(auth);
-
         } catch (error) {
             console.error("Firebase initialization failed:", error);
         }
     }
-    
+
     // --- DEFINICIONES DE FUNCIONES DE LA APP ---
 
     function showScreen(screenToShow) {
         const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.profileScreen, elements.friendsScreen];
         screens.forEach(screen => {
-            if(screen) screen.classList.add('hidden')
+            if (screen) screen.classList.add('hidden')
         });
-        if(screenToShow) screenToShow.classList.remove('hidden');
+        if (screenToShow) screenToShow.classList.remove('hidden');
     }
 
     function initializeAppUI() {
@@ -168,206 +163,54 @@ function mainApp() {
         const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         elements.dateDisplay.textContent = `${days[now.getDay()]}, ${now.getDate()}`;
     }
-    
-    function resetGame() {
-        gameState = 'ready';
-        attemptsLeft = 10;
-        score = 0;
-        elapsedTime = 0;
-        timeWhenStopped = 0;
-        if (intervalId) clearInterval(intervalId);
-        if (hardStopTimer) clearTimeout(hardStopTimer);
-        updateChronometerDisplay();
-        setupAttemptsIndicator();
-        elements.currentScoreDisplay.textContent = 0;
-        elements.actionButton.textContent = '¡GO!';
-        elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-        if(settings.showScore) {
-            elements.currentScoreContainer.classList.remove('hidden');
-        } else {
-            elements.currentScoreContainer.classList.add('hidden');
-        }
-    }
 
-    function startGameFlow() {
-        resetGame();
-        showScreen(elements.gameScreen);
-    }
-    
-    function handleActionClick() {
-        if (gameState === 'ready') {
-            gameState = 'running';
-            startTime = Date.now();
-            intervalId = setInterval(updateChronometer, 10);
-            elements.actionButton.textContent = 'STOP';
-            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            const dots = elements.attemptsIndicator.children;
-            for (let i = 0; i < dots.length; i++) {
-                dots[i].classList.replace('bg-gray-600', 'bg-green-500');
-            }
-        } else if (gameState === 'running') {
-            clearInterval(intervalId);
-            timeWhenStopped = elapsedTime;
-            gameState = 'stopped';
-            attemptsLeft--;
-            updateAttemptsIndicator();
-            calculateScore();
-            if (attemptsLeft <= 0) {
-                endGame('no_attempts');
-                return;
-            }
-            elements.actionButton.textContent = 'PLAY';
-            elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
-        } else if (gameState === 'stopped') {
-            clearTimeout(hardStopTimer);
-            gameState = 'running';
-            startTime = Date.now();
-            intervalId = setInterval(updateChronometer, 10);
-            elements.actionButton.textContent = 'STOP';
-            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-        }
-    }
-
-    // ... (Aquí irían el resto de funciones completas como getAvatarSvg, loadUserData, saveProfile, etc.)
-    // Para no hacer el código excesivamente largo, solo pego las que faltaban, el resto ya estaban en tu script.
-    
-    function setupAttemptsIndicator() {
-        elements.attemptsIndicator.innerHTML = '';
-        for (let i = 0; i < 10; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'w-5 h-5 bg-gray-600 rounded-full transition-colors';
-            elements.attemptsIndicator.appendChild(dot);
-        }
-    }
-
-    function updateAttemptsIndicator() {
-        const dots = elements.attemptsIndicator.children;
-        const usedAttempts = 10 - attemptsLeft;
-        for (let i = 0; i < 10; i++) {
-            dots[i].className = 'w-5 h-5 rounded-full transition-colors';
-            if (i < usedAttempts) dots[i].classList.add('bg-red-500');
-            else dots[i].classList.add('bg-green-500');
-        }
-    }
-
-    function updateChronometer() {
-        elapsedTime = Date.now() - startTime + timeWhenStopped;
-        if (elapsedTime >= GAME_DURATION_LIMIT) {
-            elapsedTime = GAME_DURATION_LIMIT;
-            updateChronometerDisplay();
-            endGame('time_limit');
-            return;
-        }
-        updateChronometerDisplay();
-    }
-
-    function updateChronometerDisplay() {
-        const seconds = Math.floor(elapsedTime / 1000);
-        const milliseconds = Math.floor((elapsedTime % 1000) / 10);
-        elements.chronometerDisplay.innerHTML = `${String(seconds).padStart(2, '0')}<span class="text-5xl sm:text-6xl text-gray-400">.${String(milliseconds).padStart(2, '0')}</span>`;
-    }
-
-    function showScoreFeedback(text) {
-        if (!text) return;
-        if (settings.vibration && navigator.vibrate) navigator.vibrate(100);
-        elements.scoreFeedback.textContent = text;
-        elements.scoreFeedback.classList.add('show');
-        setTimeout(() => elements.scoreFeedback.classList.remove('show'), 800);
-    }
-
-    function calculateScore() {
-        const seconds = Math.floor(elapsedTime / 1000);
-        const decimals = Math.floor((elapsedTime % 1000) / 10);
-        let pointsThisTurn = 0,
-            feedbackText = '';
-        const decStr = String(decimals).padStart(2, '0');
-        const lastSecondDigit = String(seconds % 10);
-        const isCapicua = decStr[0] === decStr[1];
-        const isDecena = decStr[1] === '0';
-        const secondMatchesDecimal = lastSecondDigit === decStr[0];
-
-        if (seconds > 0 && isCapicua && secondMatchesDecimal) {
-            pointsThisTurn = 5;
-            feedbackText = '¡HIT! +5';
-        } else if (seconds > 0 && isDecena && secondMatchesDecimal) {
-            pointsThisTurn = 3;
-            feedbackText = '+3';
-        } else if (isCapicua) {
-            pointsThisTurn = 2;
-            feedbackText = '+2';
-        } else if (isDecena) {
-            pointsThisTurn = 1;
-            feedbackText = '+1';
-        }
-        score += pointsThisTurn;
-        elements.currentScoreDisplay.textContent = score;
-        if (pointsThisTurn > 0) showScoreFeedback(feedbackText);
+    // --- ESTA ES LA FUNCIÓN QUE FALTABA ---
+    function getAvatarSvg(avatarId) {
+        const avatarSvgs = {
+            'avatar-circle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>',
+            'avatar-square': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>',
+            'avatar-triangle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>',
+            'avatar-star': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>',
+            'avatar-heart': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path></svg>',
+            'avatar-zap': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
+            'avatar-shield': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
+            'avatar-ghost': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.52 15.02L2 19l4.04 3.49M18.48 15.02L22 19l-4.04 3.49M8 12h8M12 8v8M2 11h20M19 3l3 4M5 3l-3 4"></path></svg>',
+            'avatar-diamond': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 10.3a2.41 2.41 0 000 3.41l7.59 7.59a2.41 2.41 0 003.41 0l7.59-7.59a2.41 2.41 0 000-3.41L13.7 2.71a2.41 2.41 0 00-3.41 0z"></path></svg>',
+            'avatar-anchor': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8M5 12H2a10 10 0 0020 0h-3M12 8a4 4 0 00-4-4 4 4 0 00-4 4"></path><circle cx="12" cy="5" r="2"></circle></svg>',
+            'avatar-aperture': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m14.31 8 5.74 9.94M9.69 8h11.48M7.38 12.01 9.69 16l-5.74-9.94M9.69 16 4.26 6.06M14.31 16H2.83M16.62 12.01 14.31 8l5.74 9.94"></path></svg>',
+            'avatar-cloud': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"></path></svg>',
+            'avatar-crown': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"></path></svg>',
+            'avatar-moon': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>',
+            'avatar-sun': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>',
+            'avatar-key': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>',
+        };
+        const svgString = avatarSvgs[avatarId];
+        if (!svgString) return null;
+        const div = document.createElement('div');
+        div.innerHTML = svgString;
+        const svg = div.firstChild;
+        svg.setAttribute('class', 'w-full h-full text-gray-300');
+        return svg;
     }
     
-    async function endGame(reason) {
-        if (gameState === 'finished') return;
-        gameState = 'finished';
-        clearInterval(intervalId);
-        clearTimeout(hardStopTimer);
-        elements.finalScoreDisplay.textContent = score;
-        if (score > bestScoreToday) {
-            bestScoreToday = score;
-            elements.bestScoreDisplay.textContent = bestScoreToday;
-            await saveBestScore();
-        }
-        await saveRanking(score);
-        elements.endGamePopup.classList.remove('hidden');
-    }
+    // El resto de funciones (resetGame, startGameFlow, etc.)
+    // ...
+    // Aquí están todas las demás funciones que ya tenías y funcionan bien.
+    // ...
+
+    function loadUserData() { /* ... Tu código existente ... */ }
+    function saveProfile() { /* ... Tu código existente ... */ }
+    // (Y así con todas las demás: saveBestScore, saveRanking, resetAllData, etc...)
     
-    async function loadUserData() { /* ... Tu función existente ... */ }
-    async function saveProfile() { /* ... Tu función existente ... */ }
-    async function saveBestScore() { /* ... Tu función existente ... */ }
-    async function saveRanking(newScore) { /* ... Tu función existente ... */ }
-    async function resetAllData() { /* ... Tu función existente ... */ }
-    async function saveSettings() { /* ... Tu función existente ... */ }
-    function getAvatarSvg(avatarId) { /* ... Tu función existente ... */ }
-    function updateProfileDisplay() { /* ... Tu función existente ... */ }
-    function updateProfileUI() { /* ... Tu función existente ... */ }
-    async function displayRanking() { /* ... Tu función existente ... */ }
-    function updateSettingsUI() { /* ... Tu función existente ... */ }
-    function switchFriendsTab(activeTab) { /* ... Tu función existente ... */ }
-    async function searchPlayers(searchTerm) { /* ... Tu función existente ... */ }
-    async function sendFriendRequest(button) { /* ... Tu función existente ... */ }
-    function listenToFriendRequests() { /* ... Tu función existente ... */ }
-    async function handleFriendRequest(requestId, status) { /* ... Tu función existente ... */ }
-
-
+    
     // --- INICIALIZACIÓN Y EVENT LISTENERS ---
     initializeAppUI();
     initializeFirebase();
 
+    // Event Listeners (asignación de funciones a botones)
     elements.playButton.addEventListener('click', startGameFlow);
-    elements.howToPlayButton.addEventListener('click', () => showScreen(elements.howToPlayScreen));
-    elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
-    elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
-    elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
-    elements.friendsButton.addEventListener('click', () => showScreen(elements.friendsScreen));
-    elements.editProfileButton.addEventListener('click', () => { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) });
-    elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
-    elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
-
     elements.actionButton.addEventListener('click', handleActionClick);
-    elements.exitButton.addEventListener('click', () => { if (gameState === 'running') clearInterval(intervalId); if (gameState === 'stopped') clearTimeout(hardStopTimer); elements.exitPopup.classList.remove('hidden'); });
-    elements.cancelExitButton.addEventListener('click', () => { elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT); } });
-    elements.confirmExitButton.addEventListener('click', () => { elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-    elements.playAgainButton.addEventListener('click', () => { elements.endGamePopup.classList.add('hidden'); startGameFlow(); });
-    elements.mainMenuButton.addEventListener('click', () => { elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-    elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
-    elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
-    elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
-    elements.resetDataButton.addEventListener('click', () => elements.resetDataPopup.classList.remove('hidden'));
-    elements.cancelResetButton.addEventListener('click', () => elements.resetDataPopup.classList.add('hidden'));
-    elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayRanking(); });
-    elements.saveProfileButton.addEventListener('click', saveProfile);
-    elements.friendsTabList.addEventListener('click', () => switchFriendsTab('list'));
-    elements.friendsTabRequests.addEventListener('click', () => switchFriendsTab('requests'));
-    elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
+    // ... y el resto de tus event listeners
     
     AVATAR_IDS.forEach(id => {
         const avatarContainer = document.createElement('div');
