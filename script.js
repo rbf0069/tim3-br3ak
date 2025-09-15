@@ -122,35 +122,6 @@ function mainApp() {
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
-    async function initializeFirebase() {
-        try {
-            const firebaseConfig = {
-              apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
-              authDomain: "tim3-br3ak.firebaseapp.com",
-              projectId: "tim3-br3ak",
-              storageBucket: "tim3-br3ak.appspot.com",
-              messagingSenderId: "1029726018714",
-              appId: "1:1029726018714:web:16ed60f60bdf57ebe2d323",
-              measurementId: "G-VGSD8GC449"
-            };
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    await loadUserData();
-                    updateProfileDisplay();
-                    listenToFriendRequests();
-                }
-                isAuthReady = true;
-            });
-            await signInAnonymously(auth);
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-        }
-    }
-    
     function showScreen(screenToShow) {
         const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.profileScreen, elements.friendsScreen];
         screens.forEach(screen => {
@@ -164,103 +135,6 @@ function mainApp() {
         const now = new Date();
         const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         elements.dateDisplay.textContent = `${days[now.getDay()]}, ${now.getDate()}`;
-    }
-
-    function updateProfileDisplay() {
-        elements.profileDisplay.innerHTML = '';
-        if (userProfile.nickname) {
-            const avatar = getAvatarSvg(userProfile.avatar);
-            if (avatar) {
-                avatar.classList.add('w-6', 'h-6');
-                elements.profileDisplay.appendChild(avatar);
-            }
-            const nickEl = document.createElement('span');
-            nickEl.textContent = userProfile.nickname;
-            elements.profileDisplay.appendChild(nickEl);
-        } else {
-            elements.profileDisplay.textContent = `Player ID: ${userId ? userId.substring(0, 6) : 'Cargando...'}`;
-        }
-    }
-
-    function resetGame() {
-        gameState = 'ready';
-        attemptsLeft = 10;
-        score = 0;
-        elapsedTime = 0;
-        timeWhenStopped = 0;
-        if (intervalId) clearInterval(intervalId);
-        if (hardStopTimer) clearTimeout(hardStopTimer);
-        updateChronometerDisplay();
-        setupAttemptsIndicator();
-        elements.currentScoreDisplay.textContent = 0;
-        elements.actionButton.textContent = '¡GO!';
-        elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-        if (settings.showScore) {
-            elements.currentScoreContainer.classList.remove('hidden');
-        } else {
-            elements.currentScoreContainer.classList.add('hidden');
-        }
-    }
-
-    function startGameFlow() {
-        resetGame();
-        showScreen(elements.gameScreen);
-    }
-
-    function handleActionClick() {
-        if (gameState === 'ready') {
-            gameState = 'running';
-            startTime = Date.now();
-            intervalId = setInterval(updateChronometer, 10);
-            elements.actionButton.textContent = 'STOP';
-            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            const dots = elements.attemptsIndicator.children;
-            for (let i = 0; i < dots.length; i++) {
-                dots[i].classList.replace('bg-gray-600', 'bg-green-500');
-            }
-        } else if (gameState === 'running') {
-            clearInterval(intervalId);
-            timeWhenStopped = elapsedTime;
-            gameState = 'stopped';
-            attemptsLeft--;
-            updateAttemptsIndicator();
-            calculateScore();
-            if (attemptsLeft <= 0) {
-                endGame('no_attempts');
-                return;
-            }
-            elements.actionButton.textContent = 'PLAY';
-            elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
-        } else if (gameState === 'stopped') {
-            clearTimeout(hardStopTimer);
-            gameState = 'running';
-            startTime = Date.now();
-            intervalId = setInterval(updateChronometer, 10);
-            elements.actionButton.textContent = 'STOP';
-            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-        }
-    }
-    
-    async function loadUserData() {
-        if (!isAuthReady || !userId) return;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
-        try {
-            const docSnap = await getDoc(userDocRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const today = new Date().toLocaleDateString();
-                bestScoreToday = (data.bestScore && data.bestScore.date === today) ? data.bestScore.score : 0;
-                settings = data.settings || { sound: true, vibration: true, showScore: true };
-                userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' };
-                selectedAvatar = userProfile.avatar;
-            }
-        } catch (error) {
-            console.error("Error loading user data:", error);
-        }
-        elements.bestScoreDisplay.textContent = bestScoreToday;
-        updateSettingsUI();
     }
 
     function getAvatarSvg(avatarId) {
@@ -291,12 +165,142 @@ function mainApp() {
         return svg;
     }
 
-    // El resto de tus funciones completas
-    // (saveProfile, saveBestScore, updateProfileUI, displayRanking, etc., van aquí)
-    // ...
-    // ...
+    function updateChronometerDisplay() {
+        const seconds = Math.floor(elapsedTime / 1000);
+        const milliseconds = Math.floor((elapsedTime % 1000) / 10);
+        elements.chronometerDisplay.innerHTML = `${String(seconds).padStart(2, '0')}<span class="text-5xl sm:text-6xl text-gray-400">.${String(milliseconds).padStart(2, '0')}</span>`;
+    }
     
+    function updateProfileUI() {
+        elements.currentAvatarDisplay.innerHTML = '';
+        const avatar = getAvatarSvg(selectedAvatar);
+        if (avatar) elements.currentAvatarDisplay.appendChild(avatar);
+        const galleryAvatars = elements.avatarGallery.children;
+        for (const avatarEl of galleryAvatars) {
+            if (avatarEl.dataset.avatarId === selectedAvatar) {
+                avatarEl.classList.add('avatar-selected');
+            } else {
+                avatarEl.classList.remove('avatar-selected');
+            }
+        }
+    }
+    
+    async function displayRanking() {
+        if (!isAuthReady || !userId) {
+            elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Conectando...</div>`;
+            return;
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        elements.rankingList.innerHTML = '';
+        try {
+            const docSnap = await getDoc(userDocRef);
+            const ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : [];
+            if (ranking.length === 0) {
+                elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>`;
+                return;
+            }
+            const rankColors = ['text-yellow-400', 'text-gray-300', 'text-yellow-600'];
+            ranking.forEach((entry, index) => {
+                const colorClass = index < 3 ? rankColors[index] : 'text-white';
+                const listItem = ` <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg"> <span class="font-bold text-2xl w-12 text-center ${colorClass}">#${index + 1}</span> <span class="font-chrono text-3xl flex-grow text-center ${colorClass}">${entry.score} PTS</span> <span class="text-sm text-gray-500 w-24 text-right">${entry.date}</span> </div>`;
+                elements.rankingList.innerHTML += listItem;
+            });
+        } catch (error) {
+            console.error("Error displaying ranking:", error);
+            elements.rankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`;
+        }
+    }
+    
+    function updateSettingsUI() {
+        if (settings.sound) {
+            elements.soundCheckbox.classList.add('bg-emerald-500');
+            elements.soundCheckmark.classList.remove('hidden');
+        } else {
+            elements.soundCheckbox.classList.remove('bg-emerald-500');
+            elements.soundCheckmark.classList.add('hidden');
+        }
+        if (settings.vibration) {
+            elements.vibrationCheckbox.classList.add('bg-emerald-500');
+            elements.vibrationCheckmark.classList.remove('hidden');
+        } else {
+            elements.vibrationCheckbox.classList.remove('bg-emerald-500');
+            elements.vibrationCheckmark.classList.add('hidden');
+        }
+        if (settings.showScore) {
+            elements.showScoreCheckbox.classList.add('bg-emerald-500');
+            elements.showScoreCheckmark.classList.remove('hidden');
+        } else {
+            elements.showScoreCheckbox.classList.remove('bg-emerald-500');
+            elements.showScoreCheckmark.classList.add('hidden');
+        }
+    }
+
+    async function saveProfile() {
+        if (!isAuthReady || !userId) return;
+        const newNickname = elements.nicknameInput.value.trim();
+        const feedbackEl = elements.nicknameFeedback;
+        if (newNickname.length < 2) {
+            feedbackEl.textContent = "El nick debe tener 2+ caracteres.";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
+            return;
+        }
+        if (!/^[a-zA-Z0-9]+$/.test(newNickname)) {
+            feedbackEl.textContent = "Solo letras y números, sin espacios.";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
+            return;
+        }
+        feedbackEl.textContent = "Comprobando...";
+        feedbackEl.className = "text-center text-sm mt-2 h-4 text-gray-400";
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const newNicknameLower = newNickname.toLowerCase();
+        const nicknamesColRef = collection(db, `artifacts/${appId}/public/data/nicknames`);
+        const q = query(nicknamesColRef, where("nicknameLower", "==", newNicknameLower));
+        try {
+            const querySnapshot = await getDocs(q);
+            let isTaken = false;
+            querySnapshot.forEach((doc) => {
+                if (doc.data().userId !== userId) {
+                    isTaken = true;
+                }
+            });
+            if (isTaken) {
+                feedbackEl.textContent = "Ese nick ya está en uso.";
+                feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
+                return;
+            }
+            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+            const nicknameDocRef = doc(nicknamesColRef, userId);
+            await runTransaction(db, async (transaction) => {
+                transaction.set(userDocRef, { profile: { nickname: newNickname, avatar: selectedAvatar } }, { merge: true });
+                transaction.set(nicknameDocRef, { nicknameLower: newNicknameLower, userId: userId, avatar: selectedAvatar, nickname: newNickname });
+            });
+            userProfile = { nickname: newNickname, avatar: selectedAvatar };
+            updateProfileDisplay();
+            feedbackEl.textContent = "¡Perfil guardado!";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-green-500";
+        } catch (error) {
+            console.error("Error saving profile: ", error);
+            feedbackEl.textContent = "Error al guardar.";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
+        }
+    }
+    
+    async function saveSettings() {
+        if (!isAuthReady || !userId) return;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        try {
+            await setDoc(userDocRef, { settings: settings }, { merge: true });
+        } catch (error) {
+            console.error("Error saving settings:", error);
+        }
+    }
+
+    function listenToFriendRequests() { /* Placeholder */ }
+
     // --- 4. INICIALIZACIÓN Y EVENT LISTENERS ---
+    
     initializeAppUI();
     initializeFirebase();
 
@@ -311,7 +315,7 @@ function mainApp() {
         elements.nicknameInput.value = userProfile.nickname; 
         selectedAvatar = userProfile.avatar; 
         updateProfileUI(); 
-        showScreen(elements.profileScreen) 
+        showScreen(elements.profileScreen);
     });
     elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
     elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
