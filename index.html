@@ -4,46 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>TIM3 BR3AK</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Roboto+Mono:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #111827; 
-            color: #F3F4F6; 
-            -webkit-user-select: none; 
-            user-select: none; 
-            touch-action: manipulation; 
-        }
-        .app-screen {
-            padding-top: env(safe-area-inset-top);
-            padding-right: env(safe-area-inset-right);
-            padding-left: env(safe-area-inset-left);
-        }
-        .safe-area-padding-bottom {
-             padding-bottom: env(safe-area-inset-bottom);
-        }
-        .font-title { font-family: 'Orbitron', sans-serif; }
-        .font-chrono { font-family: 'Roboto Mono', monospace; }
-        .hidden { display: none; }
-        .action-button { transition: all 0.2s ease-in-out; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
-        .action-button:active { transform: scale(0.95); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); }
-        #score-feedback { position: absolute; opacity: 0; transition: all 0.8s ease-out; transform: translateY(0px); text-shadow: 0 0 10px rgba(250, 204, 21, 0.7); }
-        #score-feedback.show { opacity: 1; transform: translateY(-50px); }
-        .avatar-selected { outline: 2px solid #34D399; background-color: #374151; }
-    </style>
+    
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex items-center justify-center h-screen w-screen">
+<body>
 
-    <!-- Pantalla de Bloqueo con Contraseña -->
-    <div id="password-protection-screen" class="w-full max-w-sm mx-auto p-6 bg-gray-900 rounded-2xl shadow-lg z-50">
+    <div id="password-protection-screen" class="w-full max-w-sm mx-auto p-6 bg-gray-900 rounded-2xl shadow-lg z-50 flex flex-col items-center justify-center">
         <div class="text-center">
             <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -51,33 +22,30 @@
             <h2 class="mt-4 text-2xl font-bold">Acceso Protegido</h2>
             <p class="mt-2 text-sm text-gray-400">Introduce la contraseña para continuar.</p>
         </div>
-        <div class="mt-6">
+        <div class="mt-6 w-full">
             <input type="password" id="password-input" class="w-full p-3 bg-gray-800 border-2 border-gray-600 rounded-lg text-center text-lg focus:border-purple-500 focus:outline-none" placeholder="Contraseña">
             <p id="password-error" class="text-red-500 text-sm text-center h-4 mt-2"></p>
             <button id="password-submit" class="w-full mt-2 action-button bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg">Desbloquear</button>
         </div>
     </div>
 
-    <!-- Contenedor Principal de la App (Oculto por defecto) -->
-    <div id="app-container" class="hidden h-screen w-screen">
+    <div id="app-container" class="hidden h-full w-full">
     
-        <!-- Pantalla Principal -->
-        <div id="main-screen" class="text-center w-full h-full max-w-md mx-auto p-4 flex flex-col items-center justify-center app-screen">
-             <h1 class="font-title text-5xl sm:text-6xl font-bold mb-8 whitespace-nowrap">TIM<span class="text-red-500">3</span> BR<span class="text-red-500">3</span>AK</h1>
-             <div class="flex flex-col space-y-4 w-full items-center">
-                 <button id="play-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl py-4 rounded-xl">¡JUGAR!</button>
-                 <button id="friends-button" class="action-button w-full max-w-xs bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">AMIGOS</button>
-                 <button id="how-to-play-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">CÓMO JUGAR</button>
-                 <button id="ranking-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">RANKING</button>
-                 <button id="settings-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">AJUSTES</button>
-                 <button id="about-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">ACERCA DE</button>
-             </div>
-             <div id="profile-display" class="mt-8 flex items-center space-x-2 text-gray-400"></div>
-             <div class="fixed bottom-5 left-0 right-0 text-center text-xs text-gray-500 safe-area-padding-bottom">Banner de Publicidad</div>
+        <div id="main-screen" class="app-screen text-center w-full h-full max-w-md mx-auto p-4 flex flex-col items-center justify-center">
+            <h1 class="font-title text-5xl sm:text-6xl font-bold mb-8 whitespace-nowrap">TIM<span class="text-red-500">3</span> BR<span class="text-red-500">3</span>AK</h1>
+            <div class="flex flex-col space-y-4 w-full items-center">
+                <button id="play-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl py-4 rounded-xl">¡JUGAR!</button>
+                <button id="friends-button" class="action-button w-full max-w-xs bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">AMIGOS</button>
+                <button id="how-to-play-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">CÓMO JUGAR</button>
+                <button id="ranking-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">RANKING</button>
+                <button id="settings-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">AJUSTES</button>
+                <button id="about-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">ACERCA DE</button>
+            </div>
+            <div id="profile-display" class="mt-8 flex items-center space-x-2 text-gray-400"></div>
+            <div class="fixed bottom-5 left-0 right-0 text-center text-xs text-gray-500 safe-area-padding-bottom">Banner de Publicidad</div>
         </div>
 
-        <!-- Pantalla de Juego -->
-        <div id="game-screen" class="hidden w-full h-full flex flex-col p-4 app-screen">
+        <div id="game-screen" class="hidden app-screen w-full h-full flex flex-col p-4">
             <header class="flex items-center justify-between mb-6 w-full max-w-md mx-auto flex-shrink-0">
                 <button id="exit-button" class="text-3xl font-bold text-gray-400 hover:text-white w-12 text-left">X</button>
                 <div class="flex-grow"></div>
@@ -102,79 +70,7 @@
             <footer class="text-center text-xs text-gray-500 py-2 flex-shrink-0 safe-area-padding-bottom">Banner de Publicidad</footer>
         </div>
         
-        <!-- Pantalla Cómo Jugar -->
-        <div id="how-to-play-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
-             <header class="w-full max-w-md mx-auto mb-6">
-                <div class="w-full"><button id="back-to-main-from-how-to-play-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
-                <h2 class="text-3xl font-bold text-white text-center mt-2">CÓMO JUGAR</h2>
-             </header>
-             <div class="flex-grow flex items-center justify-center safe-area-padding-bottom">
-                 <div class="w-full max-w-md border-4 border-gray-700 rounded-3xl bg-gray-900/50 p-6 space-y-4">
-                    <div class="text-center text-base sm:text-lg bg-gray-800 p-4 rounded-lg">
-                        <p class="leading-relaxed">Pulsa <span class="inline-flex items-center justify-center w-10 h-10 mx-1 bg-emerald-500 text-white font-bold text-sm rounded-full align-middle">GO!</span> y tienes que parar el tiempo 10 veces en 10 segundos.</p>
-                        <p class="mt-2">¡Consigue más puntos contra más precisión tengas parando el tiempo!</p>
-                    </div>
-                    <div class="space-y-3 text-base sm:text-lg">
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">00:<span class="text-yellow-400">X0</span></span><span class="font-bold text-yellow-400">+1 PUNTO</span></div>
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">00:<span class="text-cyan-400">XX</span></span><span class="font-bold text-cyan-400">+2 PUNTOS</span></div>
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">0<span class="text-pink-400">X</span>:<span class="text-pink-400">X0</span></span><span class="font-bold text-pink-400">+3 PUNTOS</span></div>
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">0<span class="text-green-400">X</span>:<span class="text-green-400">XX</span></span><span class="font-bold text-green-400">¡HIT! +5</span></div>
-                    </div>
-                </div>
-             </div>
-        </div>
-
-        <!-- Pantalla Ranking -->
-        <div id="ranking-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
-            <header class="w-full max-w-md mx-auto mb-6 flex-shrink-0">
-                <div class="w-full"><button id="back-to-main-from-ranking-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
-                <h2 class="text-3xl font-bold text-white text-center mt-2">RANKING</h2>
-            </header>
-             <main class="flex-grow flex flex-col items-center w-full overflow-y-auto"><div id="ranking-list" class="w-full max-w-md space-y-3"></div></main>
-            <div class="w-full max-w-md mx-auto mt-4 mb-2 flex-shrink-0 flex justify-center safe-area-padding-bottom">
-                <button id="reset-data-button" class="action-button w-1/2 bg-gray-800 p-2 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-900 hover:text-white transition-colors">
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                    <span class="text-sm font-semibold">Reiniciar</span>
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                </button>
-            </div>
-             <footer class="text-center text-xs text-gray-500 py-2 flex-shrink-0 safe-area-padding-bottom">Banner de Publicidad</footer>
-        </div>
-
-        <!-- Pantalla Ajustes -->
-        <div id="settings-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
-            <header class="w-full max-w-md mx-auto mb-6">
-                <div class="w-full"><button id="back-to-main-from-settings-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
-                <h2 class="text-3xl font-bold text-white text-center mt-2">AJUSTES</h2>
-            </header>
-             <div class="flex-grow flex items-center justify-center safe-area-padding-bottom">
-                 <div class="w-full max-w-md border-4 border-gray-700 rounded-3xl bg-gray-900/50 p-6 space-y-6">
-                    <button id="edit-profile-button" class="w-full bg-gray-800 p-4 rounded-lg flex items-center justify-between hover:bg-gray-700 transition-colors">
-                        <span class="text-lg font-semibold">Editar Perfil</span>
-                        <span class="text-gray-400">→</span>
-                    </button>
-                    <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
-                        <span class="text-lg font-semibold">Efectos de Sonido</span>
-                        <div id="sound-checkbox" class="w-7 h-7 border-2 border-gray-500 rounded-md flex items-center justify-center cursor-pointer transition-colors">
-                            <svg id="sound-checkmark" class="hidden w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
-                        <span class="text-lg font-semibold">Vibración</span>
-                         <div id="vibration-checkbox" class="w-7 h-7 border-2 border-gray-500 rounded-md flex items-center justify-center cursor-pointer transition-colors">
-                            <svg id="vibration-checkmark" class="hidden w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
-                        <span class="text-lg font-semibold">Mostrar Puntuación en Partida</span>
-                         <div id="show-score-checkbox" class="w-7 h-7 border-2 border-gray-500 rounded-md flex items-center justify-center cursor-pointer transition-colors">
-                            <svg id="show-score-checkmark" class="hidden w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
-                        </div>
-                    </div>
-                 </div>
-             </div>
-        </div>
-        <div id="profile-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
+        <div id="profile-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
             <header class="w-full max-w-md mx-auto mb-6">
                 <div class="w-full"><button id="back-to-settings-from-profile-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">EDITAR PERFIL</h2>
@@ -189,256 +85,17 @@
                     <input id="nickname-input" type="text" maxlength="15" class="w-full p-3 bg-gray-800 border-2 border-gray-600 rounded-lg text-center text-lg focus:border-emerald-500 focus:outline-none" placeholder="Tu Nickname">
                     <p id="nickname-feedback" class="text-center text-sm mt-2 h-4"></p>
                 </div>
-                 <div class="w-full flex-grow flex flex-col min-h-0">
+                <div class="w-full flex-grow flex flex-col min-h-0">
                     <h3 class="text-lg font-semibold text-gray-400 mb-4 text-center">Elige un Avatar</h3>
-                    <div id="avatar-gallery" class="grid grid-cols-4 gap-4 bg-gray-800 p-4 rounded-lg overflow-y-auto"></div>
+                    <div id="avatar-gallery" class="flex items-center space-x-4 bg-gray-800 p-4 rounded-lg overflow-x-auto">
+                        </div>
                 </div>
-                <button id="save-profile-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl py-3 rounded-xl flex-shrink-0">Guardar Perfil</button>
+                <button id="save-profile-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl py-3 rounded-xl flex-shrink-0 mt-4">Guardar Perfil</button>
             </div>
         </div>
-        <div id="friends-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
-            <header class="w-full max-w-md mx-auto mb-6">
-                <div class="w-full"><button id="back-to-main-from-friends-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
-                <h2 class="text-3xl font-bold text-white text-center mt-2">AMIGOS</h2>
-            </header>
-            <div class="w-full max-w-md mx-auto flex-shrink-0">
-                 <div class="flex border-b border-gray-700 mb-4">
-                    <button id="friends-tab-list" class="flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-white border-purple-500">Mis Amigos</button>
-                    <button id="friends-tab-requests" class="flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-gray-400 border-transparent hover:text-white">Solicitudes</button>
-                </div>
-                 <div class="relative mb-4">
-                    <input id="add-friend-input" type="text" class="w-full p-3 pl-10 bg-gray-800 border-2 border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Buscar jugador por Nickname...">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </div>
-                </div>
-                <div id="search-results-container" class="space-y-2"></div>
-            </div>
-            <main class="flex-grow flex flex-col items-center w-full overflow-y-auto max-w-md mx-auto safe-area-padding-bottom">
-                 <div id="friends-list-container" class="w-full space-y-3"></div>
-                 <div id="requests-list-container" class="w-full space-y-3 hidden"></div>
-            </main>
-        </div>
-        <div id="about-screen" class="hidden w-full h-full flex flex-col p-4 bg-gray-900 app-screen">
-            <header class="w-full max-w-md mx-auto mb-6">
-                 <div class="w-full"><button id="back-to-main-from-about-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
-                <h2 class="text-3xl font-bold text-white text-center mt-2">ACERCA DE</h2>
-            </header>
-             <div class="flex-grow text-gray-300 space-y-6 overflow-y-auto text-sm max-w-md mx-auto safe-area-padding-bottom">
-                <h3 class="text-xl font-bold text-white">Versión de la App</h3>
-                <p>TIM3 BR3AK v1.3.3 (Corrección Móvil Definitiva)</p>
-                <h3 class="text-xl font-bold text-white">Términos y Condiciones</h3><p>Lorem ipsum dolor sit amet...</p>
-                <h3 class="text-xl font-bold text-white">Política de Privacidad</h3><p>Vestibulum lacinia arcu eget nulla...</p>
-             </div>
+
         </div>
 
-        <!-- Pop-ups -->
-        <div id="exit-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
-            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
-                <h2 class="text-2xl font-bold mb-4">¿Quieres salir?</h2>
-                <p class="text-gray-400 mb-6">Tu puntuación no se guardará.</p>
-                <div class="flex justify-center space-x-4">
-                    <button id="confirm-exit-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Salir</button>
-                    <button id="cancel-exit-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button>
-                </div>
-            </div>
-        </div>
-        <div id="end-game-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
-            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
-                <h2 class="text-2xl font-bold mb-4">¡Partida Terminada!</h2>
-                <p class="text-gray-400 mb-6 text-xl">Tu puntuación: <span id="final-score" class="font-bold text-white">0</span></p>
-                <div class="flex flex-col space-y-4">
-                    <button id="play-again-button" class="action-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg">Jugar de Nuevo</button>
-                    <button id="main-menu-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg">Menú Principal</button>
-                </div>
-            </div>
-        </div>
-        <div id="reset-data-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
-            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
-                <h2 class="text-2xl font-bold mb-4">¿Reiniciar Puntuaciones?</h2>
-                <p class="text-gray-400 mb-6">Se borrarán todas tus puntuaciones. Esta acción no se puede deshacer.</p>
-                <div class="flex justify-center space-x-4">
-                    <button id="confirm-reset-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Reiniciar</button>
-                    <button id="cancel-reset-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Avatares SVG (ocultos) -->
-        <div id="avatar-svgs" class="hidden">
-            <svg id="avatar-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
-            <svg id="avatar-square" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
-            <svg id="avatar-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path></svg>
-            <svg id="avatar-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            <svg id="avatar-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path></svg>
-            <svg id="avatar-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <svg id="avatar-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <svg id="avatar-ghost" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.52 15.02L2 19l4.04 3.49M18.48 15.02L22 19l-4.04 3.49M8 12h8M12 8v8M2 11h20M19 3l3 4M5 3l-3 4"></path></svg>
-            <svg id="avatar-diamond" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 10.3a2.41 2.41 0 000 3.41l7.59 7.59a2.41 2.41 0 003.41 0l7.59-7.59a2.41 2.41 0 000-3.41L13.7 2.71a2.41 2.41 0 00-3.41 0z"></path></svg>
-            <svg id="avatar-anchor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8M5 12H2a10 10 0 0020 0h-3M12 8a4 4 0 00-4-4 4 4 0 00-4 4"></path><circle cx="12" cy="5" r="2"></circle></svg>
-            <svg id="avatar-aperture" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m14.31 8 5.74 9.94M9.69 8h11.48M7.38 12.01 9.69 16l-5.74-9.94M9.69 16 4.26 6.06M14.31 16H2.83M16.62 12.01 14.31 8l5.74 9.94"></path></svg>
-            <svg id="avatar-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"></path></svg>
-            <svg id="avatar-crown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"></path></svg>
-            <svg id="avatar-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
-            <svg id="avatar-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            <svg id="avatar-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
-        </div>
-    </div>
-    
-    <script type="module">
-        // Importar todo lo de Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        
-        const APP_PASSWORD = "speed"; 
-        
-        const passwordScreen = document.getElementById('password-protection-screen');
-        const appContainer = document.getElementById('app-container');
-        const passwordInput = document.getElementById('password-input');
-        const passwordSubmit = document.getElementById('password-submit');
-        const passwordError = document.getElementById('password-error');
-
-        function checkPasswordAndInit() {
-            if (sessionStorage.getItem('isUnlocked') === 'true') {
-                passwordScreen.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-                mainApp(); 
-            }
-        }
-
-        passwordSubmit.addEventListener('click', () => {
-            if (passwordInput.value === APP_PASSWORD) {
-                sessionStorage.setItem('isUnlocked', 'true');
-                checkPasswordAndInit();
-            } else {
-                passwordError.textContent = 'Contraseña incorrecta.';
-                passwordInput.value = '';
-            }
-        });
-        
-        passwordInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') passwordSubmit.click();
-            passwordError.textContent = '';
-        });
-
-        // --- FUNCIÓN PRINCIPAL DE LA APP ---
-        function mainApp() {
-            if (window.appInitialized) return; 
-            window.appInitialized = true;
-
-            const elements = {
-                mainScreen: document.getElementById('main-screen'), gameScreen: document.getElementById('game-screen'),
-                howToPlayScreen: document.getElementById('how-to-play-screen'), rankingScreen: document.getElementById('ranking-screen'),
-                settingsScreen: document.getElementById('settings-screen'), aboutScreen: document.getElementById('about-screen'),
-                profileScreen: document.getElementById('profile-screen'), friendsScreen: document.getElementById('friends-screen'),
-                playButton: document.getElementById('play-button'), howToPlayButton: document.getElementById('how-to-play-button'),
-                rankingButton: document.getElementById('ranking-button'), settingsButton: document.getElementById('settings-button'),
-                aboutButton: document.getElementById('about-button'), editProfileButton: document.getElementById('edit-profile-button'),
-                friendsButton: document.getElementById('friends-button'),
-                backToMainButtons: document.querySelectorAll('[id^="back-to-main-"]'),
-                backToSettingsFromProfileButton: document.getElementById('back-to-settings-from-profile-button'),
-                exitButton: document.getElementById('exit-button'), chronometerDisplay: document.getElementById('chronometer'),
-                attemptsIndicator: document.getElementById('attempts-indicator'), actionButton: document.getElementById('action-button'),
-                dateDisplay: document.getElementById('date-display'), scoreFeedback: document.getElementById('score-feedback'),
-                bestScoreDisplay: document.getElementById('best-score-display'), rankingList: document.getElementById('ranking-list'),
-                profileDisplay: document.getElementById('profile-display'),
-                resetDataButton: document.getElementById('reset-data-button'),
-                soundCheckbox: document.getElementById('sound-checkbox'), soundCheckmark: document.getElementById('sound-checkmark'),
-                vibrationCheckbox: document.getElementById('vibration-checkbox'), vibrationCheckmark: document.getElementById('vibration-checkmark'),
-                showScoreCheckbox: document.getElementById('show-score-checkbox'), showScoreCheckmark: document.getElementById('show-score-checkmark'),
-                nicknameInput: document.getElementById('nickname-input'), nicknameFeedback: document.getElementById('nickname-feedback'),
-                currentAvatarDisplay: document.getElementById('current-avatar-display'), avatarGallery: document.getElementById('avatar-gallery'),
-                saveProfileButton: document.getElementById('save-profile-button'),
-                friendsTabList: document.getElementById('friends-tab-list'), friendsTabRequests: document.getElementById('friends-tab-requests'),
-                friendsListContainer: document.getElementById('friends-list-container'), requestsListContainer: document.getElementById('requests-list-container'),
-                addFriendInput: document.getElementById('add-friend-input'), searchResultsContainer: document.getElementById('search-results-container'),
-                exitPopup: document.getElementById('exit-popup'), confirmExitButton: document.getElementById('confirm-exit-button'),
-                cancelExitButton: document.getElementById('cancel-exit-button'), endGamePopup: document.getElementById('end-game-popup'),
-                finalScoreDisplay: document.getElementById('final-score'), playAgainButton: document.getElementById('play-again-button'),
-                mainMenuButton: document.getElementById('main-menu-button'), resetDataPopup: document.getElementById('reset-data-popup'),
-                confirmResetButton: document.getElementById('confirm-reset-button'), cancelResetButton: document.getElementById('cancel-reset-button'),
-                currentScoreDisplay: document.getElementById('current-score-display'), currentScoreContainer: document.getElementById('current-score-container'),
-            };
-
-            let app, db, auth;
-            let userId = null;
-            let isAuthReady = false;
-            let userProfile = { nickname: '', avatar: 'avatar-circle' };
-            let gameState = 'ready', attemptsLeft = 10, score = 0, bestScoreToday = 0;
-            let intervalId = null, startTime = 0, elapsedTime = 0, timeWhenStopped = 0;
-            const GAME_DURATION_LIMIT = 10000, HARD_STOP_LIMIT = 15000;
-            let hardStopTimer = null;
-            let settings = { sound: true, vibration: true, showScore: true };
-            let selectedAvatar = 'avatar-circle';
-            const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
-            
-            async function initializeFirebase() { try { const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}'); app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); onAuthStateChanged(auth, async (user) => { if (user) { userId = user.uid; await loadUserData(); updateProfileDisplay(); listenToFriendRequests(); } isAuthReady = true; }); if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } else { await signInAnonymously(auth); } } catch (error) { console.error("Firebase initialization failed:", error); } }
-            
-            initializeAppUI();
-            initializeFirebase();
-
-            // --- A PARTIR DE AQUÍ, TODO EL RESTO DEL CÓDIGO DE LA APP ---
-            async function loadUserData() { if (!isAuthReady || !userId) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`); try { const docSnap = await getDoc(userDocRef); if (docSnap.exists()) { const data = docSnap.data(); const today = new Date().toLocaleDateString(); bestScoreToday = (data.bestScore && data.bestScore.date === today) ? data.bestScore.score : 0; settings = data.settings || { sound: true, vibration: true, showScore: true }; userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' }; selectedAvatar = userProfile.avatar; } } catch (error) { console.error("Error loading user data:", error); } elements.bestScoreDisplay.textContent = bestScoreToday; updateSettingsUI(); }
-            async function saveProfile() { if (!isAuthReady || !userId) return; const newNickname = elements.nicknameInput.value.trim(); const feedbackEl = elements.nicknameFeedback; if (newNickname.length < 2) { feedbackEl.textContent = "El nick debe tener 2+ caracteres."; feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500"; return; } if (!/^[a-zA-Z0-9]+$/.test(newNickname)) { feedbackEl.textContent = "Solo letras y números, sin espacios."; feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500"; return; } feedbackEl.textContent = "Comprobando..."; feedbackEl.className = "text-center text-sm mt-2 h-4 text-gray-400"; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const newNicknameLower = newNickname.toLowerCase(); const nicknamesColRef = collection(db, `artifacts/${appId}/public/data/nicknames`); const q = query(nicknamesColRef, where("nicknameLower", "==", newNicknameLower)); try { const querySnapshot = await getDocs(q); let isTaken = false; querySnapshot.forEach((doc) => { if (doc.data().userId !== userId) { isTaken = true; } }); if (isTaken) { feedbackEl.textContent = "Ese nick ya está en uso."; feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500"; return; } const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`); const nicknameDocRef = doc(nicknamesColRef, userId); await runTransaction(db, async (transaction) => { transaction.set(userDocRef, { profile: { nickname: newNickname, avatar: selectedAvatar } }, { merge: true }); transaction.set(nicknameDocRef, { nicknameLower: newNicknameLower, userId: userId, avatar: selectedAvatar, nickname: newNickname }); }); userProfile = { nickname: newNickname, avatar: selectedAvatar }; updateProfileDisplay(); feedbackEl.textContent = "¡Perfil guardado!"; feedbackEl.className = "text-center text-sm mt-2 h-4 text-green-500"; } catch (error) { console.error("Error saving profile: ", error); feedbackEl.textContent = "Error al guardar."; feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500"; } }
-            async function saveBestScore() { if (!isAuthReady || !userId) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`); const today = new Date().toLocaleDateString(); try { await setDoc(userDocRef, { bestScore: { score: bestScoreToday, date: today } }, { merge: true }); } catch (error) { console.error("Error saving best score:", error); } }
-            async function saveRanking(newScore) { if (!isAuthReady || !userId || newScore <= 0) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`); try { const docSnap = await getDoc(userDocRef); let ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : []; const now = new Date(); const dateString = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`; ranking.push({ score: newScore, date: dateString }); ranking.sort((a, b) => b.score - a.score); ranking = ranking.slice(0, 5); await setDoc(userDocRef, { ranking: ranking }, { merge: true }); } catch (error) { console.error("Error saving ranking:", error); } }
-            async function resetAllData() { if (!isAuthReady || !userId) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`); try { await setDoc(userDocRef, { bestScore: { score: 0, date: new Date().toLocaleDateString() }, ranking: [] }, { merge: true }); bestScoreToday = 0; elements.bestScoreDisplay.textContent = 0; } catch (error) { console.error("Error resetting data:", error); } }
-            async function saveSettings() { if (!isAuthReady || !userId) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`); try { await setDoc(userDocRef, { settings: settings }, { merge: true }); } catch (error) { console.error("Error saving settings:", error); } }
-            function showScreen(screenToShow) { const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.profileScreen, elements.friendsScreen]; screens.forEach(screen => screen.classList.add('hidden')); screenToShow.classList.remove('hidden'); }
-            function initializeAppUI() { showScreen(elements.mainScreen); const now = new Date(); const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']; elements.dateDisplay.textContent = `${days[now.getDay()]}, ${now.getDate()}`; }
-            function getAvatarSvg(avatarId) { const svgTemplate = document.getElementById(avatarId); if (!svgTemplate) return null; const svgClone = svgTemplate.cloneNode(true); svgClone.removeAttribute('id'); svgClone.setAttribute('class', 'w-full h-full text-gray-300'); return svgClone; }
-            function updateProfileDisplay() { elements.profileDisplay.innerHTML = ''; if (userProfile.nickname) { const avatar = getAvatarSvg(userProfile.avatar); if (avatar) { avatar.classList.add('w-6', 'h-6'); elements.profileDisplay.appendChild(avatar); } const nickEl = document.createElement('span'); nickEl.textContent = userProfile.nickname; elements.profileDisplay.appendChild(nickEl); } else { elements.profileDisplay.textContent = `Player ID: ${userId || 'Cargando...'}`; } }
-            function updateProfileUI() { elements.currentAvatarDisplay.innerHTML = ''; const avatar = getAvatarSvg(selectedAvatar); if (avatar) elements.currentAvatarDisplay.appendChild(avatar); const galleryAvatars = elements.avatarGallery.children; for (const avatarEl of galleryAvatars) { if (avatarEl.dataset.avatarId === selectedAvatar) avatarEl.classList.add('avatar-selected'); else avatarEl.classList.remove('avatar-selected'); } }
-            function resetGame() { gameState = 'ready'; attemptsLeft = 10; score = 0; elapsedTime = 0; timeWhenStopped = 0; if (intervalId) clearInterval(intervalId); if (hardStopTimer) clearTimeout(hardStopTimer); updateChronometerDisplay(); setupAttemptsIndicator(); elements.currentScoreDisplay.textContent = 0; elements.actionButton.textContent = '¡GO!'; elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center"; if(settings.showScore) { elements.currentScoreContainer.classList.remove('hidden'); } else { elements.currentScoreContainer.classList.add('hidden'); } }
-            function startGameFlow() { resetGame(); showScreen(elements.gameScreen); }
-            function setupAttemptsIndicator() { elements.attemptsIndicator.innerHTML = ''; for (let i = 0; i < 10; i++) { const dot = document.createElement('div'); dot.className = 'w-5 h-5 bg-gray-600 rounded-full transition-colors'; elements.attemptsIndicator.appendChild(dot); } }
-            function updateAttemptsIndicator() { const dots = elements.attemptsIndicator.children; const usedAttempts = 10 - attemptsLeft; for (let i = 0; i < 10; i++) { dots[i].className = 'w-5 h-5 rounded-full transition-colors'; if (i < usedAttempts) dots[i].classList.add('bg-red-500'); else dots[i].classList.add('bg-green-500'); } }
-            function updateChronometer() { elapsedTime = Date.now() - startTime + timeWhenStopped; if (elapsedTime >= GAME_DURATION_LIMIT) { elapsedTime = GAME_DURATION_LIMIT; updateChronometerDisplay(); endGame('time_limit'); return; } updateChronometerDisplay(); }
-            function updateChronometerDisplay() { const seconds = Math.floor(elapsedTime / 1000); const milliseconds = Math.floor((elapsedTime % 1000) / 10); elements.chronometerDisplay.innerHTML = `${String(seconds).padStart(2, '0')}<span class="text-5xl sm:text-6xl text-gray-400">.${String(milliseconds).padStart(2, '0')}</span>`; }
-            function showScoreFeedback(text) { if (!text) return; if (settings.vibration && navigator.vibrate) navigator.vibrate(100); elements.scoreFeedback.textContent = text; elements.scoreFeedback.classList.add('show'); setTimeout(() => elements.scoreFeedback.classList.remove('show'), 800); }
-            function calculateScore() { const seconds = Math.floor(elapsedTime / 1000); const decimals = Math.floor((elapsedTime % 1000) / 10); let pointsThisTurn = 0, feedbackText = ''; const decStr = String(decimals).padStart(2, '0'); const lastSecondDigit = String(seconds % 10); const isCapicua = decStr[0] === decStr[1]; const isDecena = decStr[1] === '0'; const secondMatchesDecimal = lastSecondDigit === decStr[0]; if (seconds > 0 && isCapicua && secondMatchesDecimal) { pointsThisTurn = 5; feedbackText = '¡HIT! +5'; } else if (seconds > 0 && isDecena && secondMatchesDecimal) { pointsThisTurn = 3; feedbackText = '+3'; } else if (isCapicua) { pointsThisTurn = 2; feedbackText = '+2'; } else if (isDecena) { pointsThisTurn = 1; feedbackText = '+1'; } score += pointsThisTurn; elements.currentScoreDisplay.textContent = score; if (pointsThisTurn > 0) showScoreFeedback(feedbackText); }
-            async function endGame(reason) { if (gameState === 'finished') return; gameState = 'finished'; clearInterval(intervalId); clearTimeout(hardStopTimer); elements.finalScoreDisplay.textContent = score; if (score > bestScoreToday) { bestScoreToday = score; elements.bestScoreDisplay.textContent = bestScoreToday; await saveBestScore(); } await saveRanking(score); elements.endGamePopup.classList.remove('hidden'); }
-            function handleActionClick() { if (gameState === 'ready') { gameState = 'running'; startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); elements.actionButton.textContent = 'STOP'; elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center"; const dots = elements.attemptsIndicator.children; for (let i = 0; i < dots.length; i++) { dots[i].classList.replace('bg-gray-600', 'bg-green-500'); } } else if (gameState === 'running') { clearInterval(intervalId); timeWhenStopped = elapsedTime; gameState = 'stopped'; attemptsLeft--; updateAttemptsIndicator(); calculateScore(); if (attemptsLeft <= 0) { endGame('no_attempts'); return; } elements.actionButton.textContent = 'PLAY'; elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center"; hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT); } else if (gameState === 'stopped') { clearTimeout(hardStopTimer); gameState = 'running'; startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); elements.actionButton.textContent = 'STOP'; elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center"; } }
-            async function displayRanking() { if (!isAuthReady || !userId) { elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Conectando...</div>`; return; }; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`); elements.rankingList.innerHTML = ''; try { const docSnap = await getDoc(userDocRef); const ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : []; if (ranking.length === 0) { elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>`; return; } const rankColors = ['text-yellow-400', 'text-gray-300', 'text-yellow-600']; ranking.forEach((entry, index) => { const colorClass = index < 3 ? rankColors[index] : 'text-white'; const listItem = ` <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg"> <span class="font-bold text-2xl w-12 text-center ${colorClass}">#${index + 1}</span> <span class="font-chrono text-3xl flex-grow text-center ${colorClass}">${entry.score} PTS</span> <span class="text-sm text-gray-500 w-24 text-right">${entry.date}</span> </div>`; elements.rankingList.innerHTML += listItem; }); } catch (error) { console.error("Error displaying ranking:", error); elements.rankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`; } }
-            function updateSettingsUI() { if (settings.sound) { elements.soundCheckbox.classList.add('bg-emerald-500'); elements.soundCheckmark.classList.remove('hidden'); } else { elements.soundCheckbox.classList.remove('bg-emerald-500'); elements.soundCheckmark.classList.add('hidden'); } if (settings.vibration) { elements.vibrationCheckbox.classList.add('bg-emerald-500'); elements.vibrationCheckmark.classList.remove('hidden'); } else { elements.vibrationCheckbox.classList.remove('bg-emerald-500'); elements.vibrationCheckmark.classList.add('hidden'); } if (settings.showScore) { elements.showScoreCheckbox.classList.add('bg-emerald-500'); elements.showScoreCheckmark.classList.remove('hidden'); } else { elements.showScoreCheckbox.classList.remove('bg-emerald-500'); elements.showScoreCheckmark.classList.add('hidden'); } }
-            function switchFriendsTab(activeTab) { const { friendsTabList, friendsTabRequests, friendsListContainer, requestsListContainer } = elements; if (activeTab === 'list') { friendsTabList.classList.remove('text-gray-400', 'border-transparent'); friendsTabList.classList.add('text-white', 'border-purple-500'); friendsTabRequests.classList.add('text-gray-400', 'border-transparent'); friendsTabRequests.classList.remove('text-white', 'border-purple-500'); friendsListContainer.classList.remove('hidden'); requestsListContainer.classList.add('hidden'); } else { friendsTabRequests.classList.remove('text-gray-400', 'border-transparent'); friendsTabRequests.classList.add('text-white', 'border-purple-500'); friendsTabList.classList.add('text-gray-400', 'border-transparent'); friendsTabList.classList.remove('text-white', 'border-purple-500'); requestsListContainer.classList.remove('hidden'); friendsListContainer.classList.add('hidden'); } }
-            async function searchPlayers(searchTerm) { const container = elements.searchResultsContainer; container.innerHTML = ''; if (searchTerm.length < 2) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const nicknamesColRef = collection(db, `artifacts/${appId}/public/data/nicknames`); const q = query(nicknamesColRef, where("nicknameLower", "==", searchTerm.toLowerCase())); try { const querySnapshot = await getDocs(q); if (querySnapshot.empty) { container.innerHTML = `<div class="text-center text-gray-400 p-4">No se encontraron jugadores.</div>`; return; } querySnapshot.forEach(docSnap => { const playerData = docSnap.data(); if (playerData.userId === userId) return; const resultEl = document.createElement('div'); resultEl.className = 'flex items-center justify-between bg-gray-700 p-2 rounded-lg'; const profileInfo = document.createElement('div'); profileInfo.className = 'flex items-center space-x-3'; const avatarContainer = document.createElement('div'); avatarContainer.className = 'w-10 h-10 p-1 bg-gray-800 rounded-full'; const avatar = getAvatarSvg(playerData.avatar); if(avatar) avatarContainer.appendChild(avatar); const nickEl = document.createElement('span'); nickEl.textContent = playerData.nickname; profileInfo.appendChild(avatarContainer); profileInfo.appendChild(nickEl); const addButton = document.createElement('button'); addButton.className = 'bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded-md text-sm action-button'; addButton.textContent = 'Añadir'; addButton.dataset.id = playerData.userId; addButton.onclick = (e) => sendFriendRequest(e.target); resultEl.appendChild(profileInfo); resultEl.appendChild(addButton); container.appendChild(resultEl); }); } catch (error) { console.error("Error searching players:", error); container.innerHTML = `<div class="text-center text-red-500 p-4">Error al buscar.</div>`; } }
-            async function sendFriendRequest(button) { const friendId = button.dataset.id; if (!userId || !friendId) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const requestsRef = collection(db, `artifacts/${appId}/public/data/friendRequests`); const requestId = userId < friendId ? `${userId}_${friendId}` : `${friendId}_${userId}`; const requestDocRef = doc(requestsRef, requestId); try { await setDoc(requestDocRef, { from: userId, to: friendId, status: 'pending', createdAt: new Date() }); button.textContent = 'Enviada'; button.disabled = true; button.classList.remove('bg-purple-600', 'hover:bg-purple-700'); button.classList.add('bg-gray-500', 'cursor-not-allowed'); } catch (error) { console.error("Error sending friend request:", error); button.textContent = 'Error'; } }
-            function listenToFriendRequests() { if (!userId) return; const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const requestsColRef = collection(db, `artifacts/${appId}/public/data/friendRequests`); const q = query(requestsColRef, where("to", "==", userId), where("status", "==", "pending")); onSnapshot(q, async (snapshot) => { elements.requestsListContainer.innerHTML = ''; if(snapshot.empty) { elements.requestsListContainer.innerHTML = `<div class="text-center text-gray-400 p-4">No tienes solicitudes pendientes.</div>`; return; } for (const docSnap of snapshot.docs) { const request = docSnap.data(); const senderId = request.from; const nicknamesColRef = collection(db, `artifacts/${appId}/public/data/nicknames`); const senderProfileDoc = await getDoc(doc(nicknamesColRef, senderId)); if (senderProfileDoc.exists()) { const senderProfile = senderProfileDoc.data(); const requestEl = document.createElement('div'); requestEl.className = 'flex items-center justify-between bg-gray-700 p-2 rounded-lg'; const profileInfo = document.createElement('div'); profileInfo.className = 'flex items-center space-x-3'; const avatarContainer = document.createElement('div'); avatarContainer.className = 'w-10 h-10 p-1 bg-gray-800 rounded-full'; const avatar = getAvatarSvg(senderProfile.avatar); if(avatar) avatarContainer.appendChild(avatar); const nickEl = document.createElement('span'); nickEl.textContent = senderProfile.nickname; profileInfo.appendChild(avatarContainer); profileInfo.appendChild(nickEl); const buttonsContainer = document.createElement('div'); buttonsContainer.className = 'flex space-x-2'; const acceptButton = document.createElement('button'); acceptButton.className = 'bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button'; acceptButton.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`; acceptButton.onclick = () => handleFriendRequest(docSnap.id, 'accepted'); const rejectButton = document.createElement('button'); rejectButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button'; rejectButton.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`; rejectButton.onclick = () => handleFriendRequest(docSnap.id, 'rejected'); buttonsContainer.appendChild(acceptButton); buttonsContainer.appendChild(rejectButton); requestEl.appendChild(profileInfo); requestEl.appendChild(buttonsContainer); elements.requestsListContainer.appendChild(requestEl); } } }); }
-            async function handleFriendRequest(requestId, status) { const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; const requestDocRef = doc(db, `artifacts/${appId}/public/data/friendRequests`, requestId); if (status === 'accepted') { try { const requestSnap = await getDoc(requestDocRef); if (!requestSnap.exists()) return; const requestData = requestSnap.data(); const friendId = requestData.from; const userFriendsRef = doc(db, `artifacts/${appId}/users/${userId}/private/friends`); const friendFriendsRef = doc(db, `artifacts/${appId}/users/${friendId}/private/friends`); const batch = writeBatch(db); batch.set(userFriendsRef, { [friendId]: true }, { merge: true }); batch.set(friendFriendsRef, { [userId]: true }, { merge: true }); batch.delete(requestDocRef); await batch.commit(); } catch(error) { console.error("Error accepting friend request:", error); } } else { try { await deleteDoc(requestDocRef); } catch(error) { console.error("Error rejecting friend request:", error); } } }
-            
-            elements.playButton.addEventListener('click', startGameFlow);
-            elements.howToPlayButton.addEventListener('click', () => showScreen(elements.howToPlayScreen));
-            elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
-            elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
-            elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
-            elements.friendsButton.addEventListener('click', () => showScreen(elements.friendsScreen));
-            elements.editProfileButton.addEventListener('click', () => { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) });
-            elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
-            elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
-            elements.actionButton.addEventListener('click', handleActionClick);
-            elements.exitButton.addEventListener('click', () => { if (gameState === 'running') clearInterval(intervalId); if (gameState === 'stopped') clearTimeout(hardStopTimer); elements.exitPopup.classList.remove('hidden'); });
-            elements.cancelExitButton.addEventListener('click', () => { elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT); } });
-            elements.confirmExitButton.addEventListener('click', () => { elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-            elements.playAgainButton.addEventListener('click', () => { elements.endGamePopup.classList.add('hidden'); startGameFlow(); });
-            elements.mainMenuButton.addEventListener('click', () => { elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-            elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
-            elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
-            elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
-            elements.resetDataButton.addEventListener('click', () => elements.resetDataPopup.classList.remove('hidden'));
-            elements.cancelResetButton.addEventListener('click', () => elements.resetDataPopup.classList.add('hidden'));
-            elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayRanking(); });
-            elements.saveProfileButton.addEventListener('click', saveProfile);
-            elements.friendsTabList.addEventListener('click', () => switchFriendsTab('list'));
-            elements.friendsTabRequests.addEventListener('click', () => switchFriendsTab('requests'));
-            elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
-            AVATAR_IDS.forEach(id => { const avatarContainer = document.createElement('div'); avatarContainer.dataset.avatarId = id; avatarContainer.className = 'p-2 rounded-lg cursor-pointer hover:bg-gray-700'; const svg = getAvatarSvg(id); if (svg) avatarContainer.appendChild(svg); elements.avatarGallery.appendChild(avatarContainer); avatarContainer.addEventListener('click', () => { selectedAvatar = id; updateProfileUI(); }); });
-        
-        } // Fin de mainApp()
-        
-        checkPasswordAndInit();
-    </script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
-
