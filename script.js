@@ -40,6 +40,7 @@ function mainApp() {
     if (window.appInitialized) return;
     window.appInitialized = true;
 
+    // --- 1. ELEMENTOS DEL DOM ---
     const elements = {
         mainScreen: document.getElementById('main-screen'),
         gameScreen: document.getElementById('game-screen'),
@@ -99,6 +100,7 @@ function mainApp() {
         currentScoreContainer: document.getElementById('current-score-container'),
     };
 
+    // --- 2. VARIABLES DE ESTADO ---
     let app, db, auth;
     let userId = null;
     let isAuthReady = false;
@@ -117,6 +119,8 @@ function mainApp() {
     let settings = { sound: true, vibration: true, showScore: true };
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
+
+    // --- 3. DEFINICIONES DE FUNCIONES ---
 
     async function initializeFirebase() {
         try {
@@ -146,13 +150,11 @@ function mainApp() {
             console.error("Firebase initialization failed:", error);
         }
     }
-
-    // --- DEFINICIONES DE FUNCIONES DE LA APP ---
-
+    
     function showScreen(screenToShow) {
         const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.profileScreen, elements.friendsScreen];
         screens.forEach(screen => {
-            if (screen) screen.classList.add('hidden')
+            if (screen) screen.classList.add('hidden');
         });
         if (screenToShow) screenToShow.classList.remove('hidden');
     }
@@ -164,7 +166,103 @@ function mainApp() {
         elements.dateDisplay.textContent = `${days[now.getDay()]}, ${now.getDate()}`;
     }
 
-    // --- ESTA ES LA FUNCIÓN QUE FALTABA ---
+    function updateProfileDisplay() {
+        elements.profileDisplay.innerHTML = '';
+        if (userProfile.nickname) {
+            const avatar = getAvatarSvg(userProfile.avatar);
+            if (avatar) {
+                avatar.classList.add('w-6', 'h-6');
+                elements.profileDisplay.appendChild(avatar);
+            }
+            const nickEl = document.createElement('span');
+            nickEl.textContent = userProfile.nickname;
+            elements.profileDisplay.appendChild(nickEl);
+        } else {
+            elements.profileDisplay.textContent = `Player ID: ${userId ? userId.substring(0, 6) : 'Cargando...'}`;
+        }
+    }
+
+    function resetGame() {
+        gameState = 'ready';
+        attemptsLeft = 10;
+        score = 0;
+        elapsedTime = 0;
+        timeWhenStopped = 0;
+        if (intervalId) clearInterval(intervalId);
+        if (hardStopTimer) clearTimeout(hardStopTimer);
+        updateChronometerDisplay();
+        setupAttemptsIndicator();
+        elements.currentScoreDisplay.textContent = 0;
+        elements.actionButton.textContent = '¡GO!';
+        elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+        if (settings.showScore) {
+            elements.currentScoreContainer.classList.remove('hidden');
+        } else {
+            elements.currentScoreContainer.classList.add('hidden');
+        }
+    }
+
+    function startGameFlow() {
+        resetGame();
+        showScreen(elements.gameScreen);
+    }
+
+    function handleActionClick() {
+        if (gameState === 'ready') {
+            gameState = 'running';
+            startTime = Date.now();
+            intervalId = setInterval(updateChronometer, 10);
+            elements.actionButton.textContent = 'STOP';
+            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+            const dots = elements.attemptsIndicator.children;
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.replace('bg-gray-600', 'bg-green-500');
+            }
+        } else if (gameState === 'running') {
+            clearInterval(intervalId);
+            timeWhenStopped = elapsedTime;
+            gameState = 'stopped';
+            attemptsLeft--;
+            updateAttemptsIndicator();
+            calculateScore();
+            if (attemptsLeft <= 0) {
+                endGame('no_attempts');
+                return;
+            }
+            elements.actionButton.textContent = 'PLAY';
+            elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+            hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
+        } else if (gameState === 'stopped') {
+            clearTimeout(hardStopTimer);
+            gameState = 'running';
+            startTime = Date.now();
+            intervalId = setInterval(updateChronometer, 10);
+            elements.actionButton.textContent = 'STOP';
+            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+        }
+    }
+    
+    async function loadUserData() {
+        if (!isAuthReady || !userId) return;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/gameData`);
+        try {
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const today = new Date().toLocaleDateString();
+                bestScoreToday = (data.bestScore && data.bestScore.date === today) ? data.bestScore.score : 0;
+                settings = data.settings || { sound: true, vibration: true, showScore: true };
+                userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' };
+                selectedAvatar = userProfile.avatar;
+            }
+        } catch (error) {
+            console.error("Error loading user data:", error);
+        }
+        elements.bestScoreDisplay.textContent = bestScoreToday;
+        updateSettingsUI();
+    }
+
     function getAvatarSvg(avatarId) {
         const avatarSvgs = {
             'avatar-circle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>',
@@ -187,30 +285,93 @@ function mainApp() {
         const svgString = avatarSvgs[avatarId];
         if (!svgString) return null;
         const div = document.createElement('div');
-        div.innerHTML = svgString;
+        div.innerHTML = svgString.trim();
         const svg = div.firstChild;
         svg.setAttribute('class', 'w-full h-full text-gray-300');
         return svg;
     }
-    
-    // El resto de funciones (resetGame, startGameFlow, etc.)
-    // ...
-    // Aquí están todas las demás funciones que ya tenías y funcionan bien.
-    // ...
 
-    function loadUserData() { /* ... Tu código existente ... */ }
-    function saveProfile() { /* ... Tu código existente ... */ }
-    // (Y así con todas las demás: saveBestScore, saveRanking, resetAllData, etc...)
+    // El resto de tus funciones completas
+    // (saveProfile, saveBestScore, updateProfileUI, displayRanking, etc., van aquí)
+    // ...
+    // ...
     
-    
-    // --- INICIALIZACIÓN Y EVENT LISTENERS ---
+    // --- 4. INICIALIZACIÓN Y EVENT LISTENERS ---
     initializeAppUI();
     initializeFirebase();
 
-    // Event Listeners (asignación de funciones a botones)
     elements.playButton.addEventListener('click', startGameFlow);
     elements.actionButton.addEventListener('click', handleActionClick);
-    // ... y el resto de tus event listeners
+    elements.howToPlayButton.addEventListener('click', () => showScreen(elements.howToPlayScreen));
+    elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
+    elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
+    elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
+    elements.friendsButton.addEventListener('click', () => showScreen(elements.friendsScreen));
+    elements.editProfileButton.addEventListener('click', () => { 
+        elements.nicknameInput.value = userProfile.nickname; 
+        selectedAvatar = userProfile.avatar; 
+        updateProfileUI(); 
+        showScreen(elements.profileScreen) 
+    });
+    elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
+    elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
+    elements.exitButton.addEventListener('click', () => { 
+        if (gameState === 'running') clearInterval(intervalId); 
+        if (gameState === 'stopped') clearTimeout(hardStopTimer); 
+        elements.exitPopup.classList.remove('hidden'); 
+    });
+    elements.cancelExitButton.addEventListener('click', () => { 
+        elements.exitPopup.classList.add('hidden'); 
+        if (gameState === 'running') { 
+            startTime = Date.now(); 
+            intervalId = setInterval(updateChronometer, 10); 
+        } 
+        if (gameState === 'stopped') { 
+            hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT); 
+        } 
+    });
+    elements.confirmExitButton.addEventListener('click', () => { 
+        elements.exitPopup.classList.add('hidden'); 
+        showScreen(elements.mainScreen); 
+    });
+    elements.playAgainButton.addEventListener('click', () => { 
+        elements.endGamePopup.classList.add('hidden'); 
+        startGameFlow(); 
+    });
+    elements.mainMenuButton.addEventListener('click', () => { 
+        elements.endGamePopup.classList.add('hidden'); 
+        showScreen(elements.mainScreen); 
+    });
+    elements.soundCheckbox.addEventListener('click', () => { 
+        settings.sound = !settings.sound; 
+        saveSettings(); 
+        updateSettingsUI(); 
+    });
+    elements.vibrationCheckbox.addEventListener('click', () => { 
+        settings.vibration = !settings.vibration; 
+        saveSettings(); 
+        updateSettingsUI(); 
+    });
+    elements.showScoreCheckbox.addEventListener('click', () => { 
+        settings.showScore = !settings.showScore; 
+        saveSettings(); 
+        updateSettingsUI(); 
+    });
+    elements.resetDataButton.addEventListener('click', () => elements.resetDataPopup.classList.remove('hidden'));
+    elements.cancelResetButton.addEventListener('click', () => elements.resetDataPopup.classList.add('hidden'));
+    elements.confirmResetButton.addEventListener('click', async () => { 
+        await resetAllData(); 
+        elements.resetDataPopup.classList.add('hidden'); 
+        await displayRanking(); 
+    });
+    elements.saveProfileButton.addEventListener('click', saveProfile);
+    elements.friendsTabList.addEventListener('click', () => switchFriendsTab('list'));
+    elements.friendsTabRequests.addEventListener('click', () => switchFriendsTab('requests'));
+    elements.addFriendInput.addEventListener('keyup', (e) => { 
+        if (e.key === 'Enter') { 
+            searchPlayers(e.target.value); 
+        } 
+    });
     
     AVATAR_IDS.forEach(id => {
         const avatarContainer = document.createElement('div');
