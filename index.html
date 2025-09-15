@@ -70,6 +70,76 @@
             <footer class="text-center text-xs text-gray-500 py-2 flex-shrink-0 safe-area-padding-bottom">Banner de Publicidad</footer>
         </div>
         
+        <div id="how-to-play-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
+             <header class="w-full max-w-md mx-auto mb-6">
+                 <div class="w-full"><button id="back-to-main-from-how-to-play-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
+                 <h2 class="text-3xl font-bold text-white text-center mt-2">CÓMO JUGAR</h2>
+             </header>
+             <div class="flex-grow flex items-center justify-center safe-area-padding-bottom">
+                 <div class="w-full max-w-md border-4 border-gray-700 rounded-3xl bg-gray-900/50 p-6 space-y-4">
+                     <div class="text-center text-base sm:text-lg bg-gray-800 p-4 rounded-lg">
+                         <p class="leading-relaxed">Pulsa <span class="inline-flex items-center justify-center w-10 h-10 mx-1 bg-emerald-500 text-white font-bold text-sm rounded-full align-middle">GO!</span> y tienes que parar el tiempo 10 veces en 10 segundos.</p>
+                         <p class="mt-2">¡Consigue más puntos contra más precisión tengas parando el tiempo!</p>
+                     </div>
+                     <div class="space-y-3 text-base sm:text-lg">
+                         <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">00:<span class="text-yellow-400">X0</span></span><span class="font-bold text-yellow-400">+1 PUNTO</span></div>
+                         <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">00:<span class="text-cyan-400">XX</span></span><span class="font-bold text-cyan-400">+2 PUNTOS</span></div>
+                         <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">0<span class="text-pink-400">X</span>:<span class="text-pink-400">X0</span></span><span class="font-bold text-pink-400">+3 PUNTOS</span></div>
+                         <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg"><span class="font-chrono text-xl sm:text-2xl">0<span class="text-green-400">X</span>:<span class="text-green-400">XX</span></span><span class="font-bold text-green-400">¡HIT! +5</span></div>
+                     </div>
+                 </div>
+             </div>
+        </div>
+
+        <div id="ranking-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
+            <header class="w-full max-w-md mx-auto mb-6 flex-shrink-0">
+                <div class="w-full"><button id="back-to-main-from-ranking-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
+                <h2 class="text-3xl font-bold text-white text-center mt-2">RANKING</h2>
+            </header>
+            <main class="flex-grow flex flex-col items-center w-full overflow-y-auto"><div id="ranking-list" class="w-full max-w-md space-y-3"></div></main>
+            <div class="w-full max-w-md mx-auto mt-4 mb-2 flex-shrink-0 flex justify-center safe-area-padding-bottom">
+                <button id="reset-data-button" class="action-button w-1/2 bg-gray-800 p-2 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-900 hover:text-white transition-colors">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                     <span class="text-sm font-semibold">Reiniciar</span>
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                </button>
+            </div>
+            <footer class="text-center text-xs text-gray-500 py-2 flex-shrink-0 safe-area-padding-bottom">Banner de Publicidad</footer>
+        </div>
+
+        <div id="settings-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
+            <header class="w-full max-w-md mx-auto mb-6">
+                <div class="w-full"><button id="back-to-main-from-settings-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
+                <h2 class="text-3xl font-bold text-white text-center mt-2">AJUSTES</h2>
+            </header>
+            <div class="flex-grow flex items-center justify-center safe-area-padding-bottom">
+                <div class="w-full max-w-md border-4 border-gray-700 rounded-3xl bg-gray-900/50 p-6 space-y-6">
+                    <button id="edit-profile-button" class="w-full bg-gray-800 p-4 rounded-lg flex items-center justify-between hover:bg-gray-700 transition-colors">
+                        <span class="text-lg font-semibold">Editar Perfil</span>
+                        <span class="text-gray-400">→</span>
+                    </button>
+                    <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
+                        <span class="text-lg font-semibold">Efectos de Sonido</span>
+                        <div id="sound-checkbox" class="w-7 h-7 border-2 border-gray-500 rounded-md flex items-center justify-center cursor-pointer transition-colors">
+                             <svg id="sound-checkmark" class="hidden w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
+                        <span class="text-lg font-semibold">Vibración</span>
+                         <div id="vibration-checkbox" class="w-7 h-7 border-2 border-gray-500 rounded-md flex items-center justify-center cursor-pointer transition-colors">
+                             <svg id="vibration-checkmark" class="hidden w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
+                        <span class="text-lg font-semibold">Mostrar Puntuación en Partida</span>
+                         <div id="show-score-checkbox" class="w-7 h-7 border-2 border-gray-500 rounded-md flex items-center justify-center cursor-pointer transition-colors">
+                             <svg id="show-score-checkmark" class="hidden w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div id="profile-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
             <header class="w-full max-w-md mx-auto mb-6">
                 <div class="w-full"><button id="back-to-settings-from-profile-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
@@ -94,7 +164,75 @@
             </div>
         </div>
 
+        <div id="friends-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
+            <header class="w-full max-w-md mx-auto mb-6">
+                <div class="w-full"><button id="back-to-main-from-friends-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
+                <h2 class="text-3xl font-bold text-white text-center mt-2">AMIGOS</h2>
+            </header>
+            <div class="w-full max-w-md mx-auto flex-shrink-0">
+                 <div class="flex border-b border-gray-700 mb-4">
+                     <button id="friends-tab-list" class="flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-white border-purple-500">Mis Amigos</button>
+                     <button id="friends-tab-requests" class="flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-gray-400 border-transparent hover:text-white">Solicitudes</button>
+                 </div>
+                 <div class="relative mb-4">
+                     <input id="add-friend-input" type="text" class="w-full p-3 pl-10 bg-gray-800 border-2 border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Buscar jugador por Nickname...">
+                     <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                         <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                     </div>
+                 </div>
+                 <div id="search-results-container" class="space-y-2"></div>
+            </div>
+            <main class="flex-grow flex flex-col items-center w-full overflow-y-auto max-w-md mx-auto safe-area-padding-bottom">
+                 <div id="friends-list-container" class="w-full space-y-3"></div>
+                 <div id="requests-list-container" class="w-full space-y-3 hidden"></div>
+            </main>
         </div>
+
+        <div id="about-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
+            <header class="w-full max-w-md mx-auto mb-6">
+                 <div class="w-full"><button id="back-to-main-from-about-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
+                <h2 class="text-3xl font-bold text-white text-center mt-2">ACERCA DE</h2>
+            </header>
+            <div class="flex-grow text-gray-300 space-y-6 overflow-y-auto text-sm max-w-md mx-auto safe-area-padding-bottom">
+                <h3 class="text-xl font-bold text-white">Versión de la App</h3>
+                <p>TIM3 BR3AK v1.5.1</p>
+                <h3 class="text-xl font-bold text-white">Términos y Condiciones</h3><p>Lorem ipsum dolor sit amet...</p>
+                <h3 class="text-xl font-bold text-white">Política de Privacidad</h3><p>Vestibulum lacinia arcu eget nulla...</p>
+            </div>
+        </div>
+
+        <div id="exit-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
+            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
+                <h2 class="text-2xl font-bold mb-4">¿Quieres salir?</h2>
+                <p class="text-gray-400 mb-6">Tu puntuación no se guardará.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="confirm-exit-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Salir</button>
+                    <button id="cancel-exit-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        <div id="end-game-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
+            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
+                <h2 class="text-2xl font-bold mb-4">¡Partida Terminada!</h2>
+                <p class="text-gray-400 mb-6 text-xl">Tu puntuación: <span id="final-score" class="font-bold text-white">0</span></p>
+                <div class="flex flex-col space-y-4">
+                    <button id="play-again-button" class="action-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg">Jugar de Nuevo</button>
+                    <button id="main-menu-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg">Menú Principal</button>
+                </div>
+            </div>
+        </div>
+        <div id="reset-data-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
+            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
+                <h2 class="text-2xl font-bold mb-4">¿Reiniciar Puntuaciones?</h2>
+                <p class="text-gray-400 mb-6">Se borrarán todas tus puntuaciones. Esta acción no se puede deshacer.</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="confirm-reset-button" class="action-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg">Reiniciar</button>
+                    <button id="cancel-reset-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
     <script type="module" src="script.js"></script>
 </body>
