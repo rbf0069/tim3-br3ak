@@ -87,7 +87,6 @@ function mainApp() {
     
     async function initializeFirebase() {
         try {
-            // CREDENCIALES INTEGRADAS
             const firebaseConfig = {
                 apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
                 authDomain: "tim3-br3ak.firebaseapp.com",
@@ -663,8 +662,6 @@ function mainApp() {
             updateProfileUI();
         });
     });
-
-} 
-
+}
 // --- ARRANQUE DE LA APLICACIÓN ---
 checkPasswordAndInit();
