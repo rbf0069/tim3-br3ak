@@ -491,6 +491,15 @@ function mainApp() {
         }
     }
     
+    // --- NUEVA FUNCIÓN PARA ELIMINAR AMIGOS (MOCK) ---
+    function handleMockRemoveFriend(friendId) {
+        const friendIndex = mockUserFriends.findIndex(friend => friend.userId === friendId);
+        if (friendIndex > -1) {
+            mockUserFriends.splice(friendIndex, 1);
+        }
+        displayFriends(); // Vuelve a dibujar la lista de amigos actualizada
+    }
+
     function displayFriends(){
         const container=elements.friendsListContainer;
         container.innerHTML="";
@@ -521,22 +530,20 @@ function mainApp() {
             const removeButton=document.createElement("button");
             removeButton.className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button";
             removeButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+            removeButton.onclick = () => handleMockRemoveFriend(friend.userId); // <-- AÑADIDO
             friendCard.appendChild(profileInfo);
             friendCard.appendChild(removeButton);
             container.appendChild(friendCard)
         })
     }
     
-    // --- NUEVA FUNCIÓN PARA GESTIONAR SOLICITUDES (MOCK) ---
     function handleMockRequest(requestUserId, action) {
         const requestIndex = mockFriendRequests.findIndex(req => req.userId === requestUserId);
-        if (requestIndex === -1) return; // No se encontró la solicitud
+        if (requestIndex === -1) return;
 
         if (action === 'accept') {
-            // 1. Encuentra los datos completos del jugador que envió la solicitud
             const requesterData = mockAllPlayers.find(player => player.userId === requestUserId);
             if(requesterData) {
-                 // 2. Añádelo a la lista de amigos
                 mockUserFriends.push({
                     userId: requesterData.userId,
                     nickname: requesterData.nickname,
@@ -545,11 +552,7 @@ function mainApp() {
                 });
             }
         }
-
-        // 3. Elimina la solicitud de la lista de pendientes (tanto si se acepta como si se rechaza)
         mockFriendRequests.splice(requestIndex, 1);
-
-        // 4. Actualiza las dos vistas para que se reflejen los cambios
         displayFriends();
         displayFriendRequests();
     }
@@ -580,11 +583,11 @@ function mainApp() {
             const acceptButton=document.createElement("button");
             acceptButton.className="bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button";
             acceptButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-            acceptButton.onclick = () => handleMockRequest(request.userId, 'accept'); // <-- AÑADIDO
+            acceptButton.onclick = () => handleMockRequest(request.userId, 'accept');
             const rejectButton=document.createElement("button");
             rejectButton.className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button";
             rejectButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-            rejectButton.onclick = () => handleMockRequest(request.userId, 'reject'); // <-- AÑADIDO
+            rejectButton.onclick = () => handleMockRequest(request.userId, 'reject');
             buttonsContainer.appendChild(acceptButton);
             buttonsContainer.appendChild(rejectButton);
             requestCard.appendChild(profileInfo);
