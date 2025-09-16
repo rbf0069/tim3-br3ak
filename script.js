@@ -143,335 +143,374 @@ function mainApp() {
     initializeAppUI();
     initializeFirebase();
 
-    async function loadUserData(){
-        if(!isAuthReady||!userId)return;
-        const userDocRef=doc(db,"users",userId);
-        try{
-            const docSnap=await getDoc(userDocRef);
-            if(docSnap.exists()){
-                const data=docSnap.data();
-                const today=(new Date).toLocaleDateString();
-                bestScoreToday=data.bestScore&&data.bestScore.date===today?data.bestScore.score:0;
-                settings=data.settings||{sound:!0,vibration:!0,showScore:!0};
-                userProfile=data.profile||{nickname:"",avatar:"avatar-circle"};
-                selectedAvatar=userProfile.avatar
+    async function loadUserData() {
+        if (!isAuthReady || !userId) return;
+        const userDocRef = doc(db, "users", userId);
+        try {
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const today = new Date().toLocaleDateString();
+                bestScoreToday = (data.bestScore && data.bestScore.date === today) ? data.bestScore.score : 0;
+                settings = data.settings || { sound: true, vibration: true, showScore: true };
+                userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' };
+                selectedAvatar = userProfile.avatar;
             }
-        }catch(error){
-            console.error("Error loading user data:",error)
+        } catch (error) {
+            console.error("Error loading user data:", error);
         }
-        elements.bestScoreDisplay.textContent=bestScoreToday;
-        updateSettingsUI()
+        elements.bestScoreDisplay.textContent = bestScoreToday;
+        updateSettingsUI();
     }
-    async function saveProfile(){
-        if(!isAuthReady||!userId)return;
-        const newNickname=elements.nicknameInput.value.trim();
-        const feedbackEl=elements.nicknameFeedback;
-        if(newNickname.length<2){
-            feedbackEl.textContent="El nick debe tener 2+ caracteres.";
-            feedbackEl.className="text-center text-sm mt-2 h-4 text-red-500";
-            return
+
+    async function saveProfile() {
+        if (!isAuthReady || !userId) return;
+        const newNickname = elements.nicknameInput.value.trim();
+        const feedbackEl = elements.nicknameFeedback;
+        if (newNickname.length < 2) {
+            feedbackEl.textContent = "El nick debe tener 2+ caracteres.";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
+            return;
         }
-        if(!/^[a-zA-Z0-9]+$/.test(newNickname)){
-            feedbackEl.textContent="Solo letras y números, sin espacios.";
-            feedbackEl.className="text-center text-sm mt-2 h-4 text-red-500";
-            return
+        if (!/^[a-zA-Z0-9]+$/.test(newNickname)) {
+            feedbackEl.textContent = "Solo letras y números, sin espacios.";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
+            return;
         }
-        feedbackEl.textContent="Comprobando...";
-        feedbackEl.className="text-center text-sm mt-2 h-4 text-gray-400";
-        const newNicknameLower=newNickname.toLowerCase();
-        const nicknamesColRef=collection(db,"nicknames");
-        const q=query(nicknamesColRef,where("nicknameLower","==",newNicknameLower));
-        try{
-            const querySnapshot=await getDocs(q);
-            let isTaken=!1;
-            querySnapshot.forEach(doc=>{
-                if(doc.data().userId!==userId)isTaken=!0
+        feedbackEl.textContent = "Comprobando...";
+        feedbackEl.className = "text-center text-sm mt-2 h-4 text-gray-400";
+        const newNicknameLower = newNickname.toLowerCase();
+        const nicknamesColRef = collection(db, "nicknames");
+        const q = query(nicknamesColRef, where("nicknameLower", "==", newNicknameLower));
+        try {
+            const querySnapshot = await getDocs(q);
+            let isTaken = false;
+            querySnapshot.forEach((doc) => {
+                if (doc.data().userId !== userId) {
+                    isTaken = true;
+                }
             });
-            if(isTaken){
-                feedbackEl.textContent="Ese nick ya está en uso.";
-                feedbackEl.className="text-center text-sm mt-2 h-4 text-red-500";
-                return
+            if (isTaken) {
+                feedbackEl.textContent = "Ese nick ya está en uso.";
+                feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
+                return;
             }
-            const userDocRef=doc(db,"users",userId);
-            const nicknameDocRef=doc(nicknamesColRef,userId);
-            await runTransaction(db,async transaction=>{
-                transaction.set(userDocRef,{profile:{nickname:newNickname,avatar:selectedAvatar}},{merge:!0});
-                transaction.set(nicknameDocRef,{nicknameLower:newNicknameLower,userId:userId,avatar:selectedAvatar,nickname:newNickname})
+            const userDocRef = doc(db, "users", userId);
+            const nicknameDocRef = doc(nicknamesColRef, userId);
+            await runTransaction(db, async (transaction) => {
+                transaction.set(userDocRef, { profile: { nickname: newNickname, avatar: selectedAvatar } }, { merge: true });
+                transaction.set(nicknameDocRef, { nicknameLower: newNicknameLower, userId: userId, avatar: selectedAvatar, nickname: newNickname });
             });
-            userProfile={nickname:newNickname,avatar:selectedAvatar};
+            userProfile = { nickname: newNickname, avatar: selectedAvatar };
             updateProfileDisplay();
-            feedbackEl.textContent="¡Perfil guardado!";
-            feedbackEl.className="text-center text-sm mt-2 h-4 text-green-500"
-        }catch(error){
-            console.error("Error saving profile: ",error);
-            feedbackEl.textContent="Error al guardar.";
-            feedbackEl.className="text-center text-sm mt-2 h-4 text-red-500"
+            feedbackEl.textContent = "¡Perfil guardado!";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-green-500";
+        } catch (error) {
+            console.error("Error saving profile: ", error);
+            feedbackEl.textContent = "Error al guardar.";
+            feedbackEl.className = "text-center text-sm mt-2 h-4 text-red-500";
         }
     }
-    async function saveBestScore(){
-        if(!isAuthReady||!userId)return;
-        const userDocRef=doc(db,"users",userId);
-        const today=(new Date).toLocaleDateString();
-        try{
-            await setDoc(userDocRef,{bestScore:{score:bestScoreToday,date:today}},{merge:!0})
-        }catch(error){
-            console.error("Error saving best score:",error)
+
+    async function saveBestScore() {
+        if (!isAuthReady || !userId) return;
+        const userDocRef = doc(db, "users", userId);
+        const today = new Date().toLocaleDateString();
+        try {
+            await setDoc(userDocRef, { bestScore: { score: bestScoreToday, date: today } }, { merge: true });
+        } catch (error) {
+            console.error("Error saving best score:", error);
         }
     }
-    async function saveRanking(newScore){
-        if(!isAuthReady||!userId||newScore<=0)return;
-        const userDocRef=doc(db,"users",userId);
-        try{
-            const docSnap=await getDoc(userDocRef);
-            let ranking=docSnap.exists()&&docSnap.data().ranking?docSnap.data().ranking:[];
-            const now=new Date;
-            const dateString=`${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
-            ranking.push({score:newScore,date:dateString});
-            ranking.sort((a,b)=>b.score-a.score);
-            ranking=ranking.slice(0,5);
-            await setDoc(userDocRef,{ranking:ranking},{merge:!0})
-        }catch(error){
-            console.error("Error saving ranking:",error)
+
+    async function saveRanking(newScore) {
+        if (!isAuthReady || !userId || newScore <= 0) return;
+        const userDocRef = doc(db, "users", userId);
+        try {
+            const docSnap = await getDoc(userDocRef);
+            let ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : [];
+            const now = new Date();
+            const dateString = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+            ranking.push({ score: newScore, date: dateString });
+            ranking.sort((a, b) => b.score - a.score);
+            ranking = ranking.slice(0, 5);
+            await setDoc(userDocRef, { ranking: ranking }, { merge: true });
+        } catch (error) {
+            console.error("Error saving ranking:", error);
         }
     }
-    async function resetAllData(){
-        if(!isAuthReady||!userId)return;
-        const userDocRef=doc(db,"users",userId);
-        try{
-            await setDoc(userDocRef,{bestScore:{score:0,date:(new Date).toLocaleDateString()},ranking:[]},{merge:!0});
-            bestScoreToday=0;
-            elements.bestScoreDisplay.textContent=0
-        }catch(error){
-            console.error("Error resetting data:",error)
+
+    async function resetAllData() {
+        if (!isAuthReady || !userId) return;
+        const userDocRef = doc(db, "users", userId);
+        try {
+            await setDoc(userDocRef, { bestScore: { score: 0, date: new Date().toLocaleDateString() }, ranking: [] }, { merge: true });
+            bestScoreToday = 0;
+            elements.bestScoreDisplay.textContent = 0;
+        } catch (error) {
+            console.error("Error resetting data:", error);
         }
     }
-    async function saveSettings(){
-        if(!isAuthReady||!userId)return;
-        const userDocRef=doc(db,"users",userId);
-        try{
-            await setDoc(userDocRef,{settings:settings},{merge:!0})
-        }catch(error){
-            console.error("Error saving settings:",error)
+
+    async function saveSettings() {
+        if (!isAuthReady || !userId) return;
+        const userDocRef = doc(db, "users", userId);
+        try {
+            await setDoc(userDocRef, { settings: settings }, { merge: true });
+        } catch (error) {
+            console.error("Error saving settings:", error);
         }
     }
-    function showScreen(screenToShow){
-        const screens=[elements.mainScreen,elements.gameScreen,elements.howToPlayScreen,elements.rankingScreen,elements.settingsScreen,elements.aboutScreen,elements.profileScreen,elements.friendsScreen];
-        screens.forEach(screen=>screen.classList.add("hidden"));
-        screenToShow.classList.remove("hidden")
+
+    function showScreen(screenToShow) {
+        const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.profileScreen, elements.friendsScreen];
+        screens.forEach(screen => screen.classList.add('hidden'));
+        screenToShow.classList.remove('hidden');
     }
-    function initializeAppUI(){
+
+    function initializeAppUI() {
         showScreen(elements.mainScreen);
-        const now=new Date;
-        const days=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-        elements.dateDisplay.textContent=`${days[now.getDay()]}, ${now.getDate()}`
+        const now = new Date();
+        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        elements.dateDisplay.textContent = `${days[now.getDay()]}, ${now.getDate()}`;
     }
-    function getAvatarSvg(avatarId){
-        const svgTemplate=document.getElementById(avatarId);
-        if(!svgTemplate)return null;
-        const svgClone=svgTemplate.cloneNode(!0);
-        svgClone.removeAttribute("id");
-        svgClone.setAttribute("class","w-full h-full text-gray-300");
-        return svgClone
+
+    function getAvatarSvg(avatarId) {
+        const svgTemplate = document.getElementById(avatarId);
+        if (!svgTemplate) return null;
+        const svgClone = svgTemplate.cloneNode(true);
+        svgClone.removeAttribute('id');
+        svgClone.setAttribute('class', 'w-full h-full text-gray-300');
+        return svgClone;
     }
-    function updateProfileDisplay(){
-        elements.profileDisplay.innerHTML="";
-        if(userProfile.nickname){
-            const avatar=getAvatarSvg(userProfile.avatar);
-            if(avatar){
-                avatar.classList.add("w-6","h-6");
-                elements.profileDisplay.appendChild(avatar)
+
+    function updateProfileDisplay() {
+        elements.profileDisplay.innerHTML = '';
+        if (userProfile.nickname) {
+            const avatar = getAvatarSvg(userProfile.avatar);
+            if (avatar) {
+                avatar.classList.add('w-6', 'h-6');
+                elements.profileDisplay.appendChild(avatar);
             }
-            const nickEl=document.createElement("span");
-            nickEl.textContent=userProfile.nickname;
-            elements.profileDisplay.appendChild(nickEl)
-        }else elements.profileDisplay.textContent=`Player ID: ${userId||"Cargando..."}`
+            const nickEl = document.createElement('span');
+            nickEl.textContent = userProfile.nickname;
+            elements.profileDisplay.appendChild(nickEl);
+        } else {
+            elements.profileDisplay.textContent = `Player ID: ${userId || 'Cargando...'}`;
+        }
     }
-    function updateProfileUI(){
-        elements.currentAvatarDisplay.innerHTML="";
-        const avatar=getAvatarSvg(selectedAvatar);
-        if(avatar)elements.currentAvatarDisplay.appendChild(avatar);
-        const galleryAvatars=elements.avatarGallery.children;
-        for(const avatarEl of galleryAvatars)
-            if(avatarEl.dataset.avatarId===selectedAvatar)avatarEl.classList.add("avatar-selected");
-            else avatarEl.classList.remove("avatar-selected")
+
+    function updateProfileUI() {
+        elements.currentAvatarDisplay.innerHTML = '';
+        const avatar = getAvatarSvg(selectedAvatar);
+        if (avatar) elements.currentAvatarDisplay.appendChild(avatar);
+        const galleryAvatars = elements.avatarGallery.children;
+        for (const avatarEl of galleryAvatars) {
+            if (avatarEl.dataset.avatarId === selectedAvatar) {
+                avatarEl.classList.add('avatar-selected');
+            } else {
+                avatarEl.classList.remove('avatar-selected');
+            }
+        }
     }
-    function resetGame(){
-        gameState="ready";
-        attemptsLeft=10;
-        score=0;
-        elapsedTime=0;
-        timeWhenStopped=0;
-        if(intervalId)clearInterval(intervalId);
-        if(hardStopTimer)clearTimeout(hardStopTimer);
+
+    function resetGame() {
+        gameState = 'ready';
+        attemptsLeft = 10;
+        score = 0;
+        elapsedTime = 0;
+        timeWhenStopped = 0;
+        if (intervalId) clearInterval(intervalId);
+        if (hardStopTimer) clearTimeout(hardStopTimer);
         updateChronometerDisplay();
         setupAttemptsIndicator();
-        elements.currentScoreDisplay.textContent=0;
-        elements.actionButton.textContent="¡GO!";
-        elements.actionButton.className="action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-        if(settings.showScore)elements.currentScoreContainer.classList.remove("hidden");
-        else elements.currentScoreContainer.classList.add("hidden")
+        elements.currentScoreDisplay.textContent = 0;
+        elements.actionButton.textContent = '¡GO!';
+        elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+        if (settings.showScore) {
+            elements.currentScoreContainer.classList.remove('hidden');
+        } else {
+            elements.currentScoreContainer.classList.add('hidden');
+        }
     }
-    function startGameFlow(){
+
+    function startGameFlow() {
         resetGame();
-        showScreen(elements.gameScreen)
+        showScreen(elements.gameScreen);
     }
-    function setupAttemptsIndicator(){
-        elements.attemptsIndicator.innerHTML="";
-        for(let i=0;i<10;i++){
-            const dot=document.createElement("div");
-            dot.className="w-5 h-5 bg-gray-600 rounded-full transition-colors";
-            elements.attemptsIndicator.appendChild(dot)
+
+    function setupAttemptsIndicator() {
+        elements.attemptsIndicator.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'w-5 h-5 bg-gray-600 rounded-full transition-colors';
+            elements.attemptsIndicator.appendChild(dot);
         }
     }
-    function updateAttemptsIndicator(){
-        const dots=elements.attemptsIndicator.children;
-        const usedAttempts=10-attemptsLeft;
-        for(let i=0;i<10;i++){
-            dots[i].className="w-5 h-5 rounded-full transition-colors";
-            if(i<usedAttempts)dots[i].classList.add("bg-red-500");
-            else dots[i].classList.add("bg-green-500")
+
+    function updateAttemptsIndicator() {
+        const dots = elements.attemptsIndicator.children;
+        const usedAttempts = 10 - attemptsLeft;
+        for (let i = 0; i < 10; i++) {
+            dots[i].className = 'w-5 h-5 rounded-full transition-colors';
+            if (i < usedAttempts) {
+                dots[i].classList.add('bg-red-500');
+            } else {
+                dots[i].classList.add('bg-green-500');
+            }
         }
     }
-    function updateChronometer(){
-        elapsedTime=Date.now()-startTime+timeWhenStopped;
-        if(elapsedTime>=1e4){
-            elapsedTime=1e4;
+
+    function updateChronometer() {
+        elapsedTime = Date.now() - startTime + timeWhenStopped;
+        if (elapsedTime >= GAME_DURATION_LIMIT) {
+            elapsedTime = GAME_DURATION_LIMIT;
             updateChronometerDisplay();
-            endGame("time_limit");
-            return
+            endGame('time_limit');
+            return;
         }
-        updateChronometerDisplay()
+        updateChronometerDisplay();
     }
-    function updateChronometerDisplay(){
-        const seconds=Math.floor(elapsedTime/1e3);
-        const milliseconds=Math.floor(elapsedTime%1e3/10);
-        elements.chronometerDisplay.innerHTML=`${String(seconds).padStart(2,"0")}<span class="text-5xl sm:text-6xl text-gray-400">.${String(milliseconds).padStart(2,"0")}</span>`
+
+    function updateChronometerDisplay() {
+        const seconds = Math.floor(elapsedTime / 1000);
+        const milliseconds = Math.floor((elapsedTime % 1000) / 10);
+        elements.chronometerDisplay.innerHTML = `${String(seconds).padStart(2, '0')}<span class="text-5xl sm:text-6xl text-gray-400">.${String(milliseconds).padStart(2, '0')}</span>`;
     }
-    function showScoreFeedback(text){
-        if(!text)return;
-        if(settings.vibration&&navigator.vibrate)navigator.vibrate(100);
-        elements.scoreFeedback.textContent=text;
-        elements.scoreFeedback.classList.add("show");
-        setTimeout(()=>elements.scoreFeedback.classList.remove("show"),800)
+
+    function showScoreFeedback(text) {
+        if (!text) return;
+        if (settings.vibration && navigator.vibrate) navigator.vibrate(100);
+        elements.scoreFeedback.textContent = text;
+        elements.scoreFeedback.classList.add('show');
+        setTimeout(() => elements.scoreFeedback.classList.remove('show'), 800);
     }
-    function calculateScore(){
-        const seconds=Math.floor(elapsedTime/1e3),
-        decimals=Math.floor(elapsedTime%1e3/10);
-        let pointsThisTurn=0,feedbackText="";
-        const decStr=String(decimals).padStart(2,"0"),
-        lastSecondDigit=String(seconds%10),
-        isCapicua=decStr[0]===decStr[1],
-        isDecena=decStr[1]==="0",
-        secondMatchesDecimal=lastSecondDigit===decStr[0];
-        if(seconds>0&&isCapicua&&secondMatchesDecimal){
-            pointsThisTurn=5;
-            feedbackText="¡HIT! +5"
-        }else if(seconds>0&&isDecena&&secondMatchesDecimal){
-            pointsThisTurn=3;
-            feedbackText="+3"
-        }else if(isCapicua){
-            pointsThisTurn=2;
-            feedbackText="+2"
-        }else if(isDecena){
-            pointsThisTurn=1;
-            feedbackText="+1"
+
+    function calculateScore() {
+        const seconds = Math.floor(elapsedTime / 1000);
+        const decimals = Math.floor((elapsedTime % 1000) / 10);
+        let pointsThisTurn = 0,
+            feedbackText = '';
+        const decStr = String(decimals).padStart(2, '0');
+        const lastSecondDigit = String(seconds % 10);
+        const isCapicua = decStr[0] === decStr[1];
+        const isDecena = decStr[1] === '0';
+        const secondMatchesDecimal = lastSecondDigit === decStr[0];
+        if (seconds > 0 && isCapicua && secondMatchesDecimal) {
+            pointsThisTurn = 5;
+            feedbackText = '¡HIT! +5';
+        } else if (seconds > 0 && isDecena && secondMatchesDecimal) {
+            pointsThisTurn = 3;
+            feedbackText = '+3';
+        } else if (isCapicua) {
+            pointsThisTurn = 2;
+            feedbackText = '+2';
+        } else if (isDecena) {
+            pointsThisTurn = 1;
+            feedbackText = '+1';
         }
-        score+=pointsThisTurn;
-        elements.currentScoreDisplay.textContent=score;
-        if(pointsThisTurn>0)showScoreFeedback(feedbackText)
+        score += pointsThisTurn;
+        elements.currentScoreDisplay.textContent = score;
+        if (pointsThisTurn > 0) showScoreFeedback(feedbackText);
     }
-    async function endGame(reason){
-        if(gameState==="finished")return;
-        gameState="finished";
+
+    async function endGame(reason) {
+        if (gameState === 'finished') return;
+        gameState = 'finished';
         clearInterval(intervalId);
         clearTimeout(hardStopTimer);
-        elements.finalScoreDisplay.textContent=score;
-        if(score>bestScoreToday){
-            bestScoreToday=score;
-            elements.bestScoreDisplay.textContent=bestScoreToday;
-            await saveBestScore()
+        elements.finalScoreDisplay.textContent = score;
+        if (score > bestScoreToday) {
+            bestScoreToday = score;
+            elements.bestScoreDisplay.textContent = bestScoreToday;
+            await saveBestScore();
         }
         await saveRanking(score);
-        elements.endGamePopup.classList.remove("hidden")
+        elements.endGamePopup.classList.remove('hidden');
     }
-    function handleActionClick(){
-        if(gameState==="ready"){
-            gameState="running";
-            startTime=Date.now();
-            intervalId=setInterval(updateChronometer,10);
-            elements.actionButton.textContent="STOP";
-            elements.actionButton.className="action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            const dots=elements.attemptsIndicator.children;
-            for(let i=0;i<dots.length;i++)dots[i].classList.replace("bg-gray-600","bg-green-500")
-        }else if(gameState==="running"){
+
+    function handleActionClick() {
+        if (gameState === 'ready') {
+            gameState = 'running';
+            startTime = Date.now();
+            intervalId = setInterval(updateChronometer, 10);
+            elements.actionButton.textContent = 'STOP';
+            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+            const dots = elements.attemptsIndicator.children;
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.replace('bg-gray-600', 'bg-green-500');
+            }
+        } else if (gameState === 'running') {
             clearInterval(intervalId);
-            timeWhenStopped=elapsedTime;
-            gameState="stopped";
+            timeWhenStopped = elapsedTime;
+            gameState = 'stopped';
             attemptsLeft--;
             updateAttemptsIndicator();
             calculateScore();
-            if(attemptsLeft<=0){
-                endGame("no_attempts");
-                return
+            if (attemptsLeft <= 0) {
+                endGame('no_attempts');
+                return;
             }
-            elements.actionButton.textContent="PLAY";
-            elements.actionButton.className="action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            hardStopTimer=setTimeout(()=>endGame("hard_stop_timeout"),15e3)
-        }else if(gameState==="stopped"){
+            elements.actionButton.textContent = 'PLAY';
+            elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+            hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
+        } else if (gameState === 'stopped') {
             clearTimeout(hardStopTimer);
-            gameState="running";
-            startTime=Date.now();
-            intervalId=setInterval(updateChronometer,10);
-            elements.actionButton.textContent="STOP";
-            elements.actionButton.className="action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center"
+            gameState = 'running';
+            startTime = Date.now();
+            intervalId = setInterval(updateChronometer, 10);
+            elements.actionButton.textContent = 'STOP';
+            elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
         }
     }
-    async function displayRanking(){
-        if(!isAuthReady||!userId){
-            elements.rankingList.innerHTML='<div class="text-gray-400 text-center">Conectando...</div>';
-            return
-        }
-        const userDocRef=doc(db,"users",userId);
-        elements.rankingList.innerHTML="";
-        try{
-            const docSnap=await getDoc(userDocRef),
-            ranking=docSnap.exists()&&docSnap.data().ranking?docSnap.data().ranking:[];
-            if(ranking.length===0){
-                elements.rankingList.innerHTML='<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>';
-                return
+
+    async function displayRanking() {
+        if (!isAuthReady || !userId) {
+            elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Conectando...</div>`;
+            return;
+        };
+        const userDocRef = doc(db, "users", userId);
+        elements.rankingList.innerHTML = '';
+        try {
+            const docSnap = await getDoc(userDocRef);
+            const ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : [];
+            if (ranking.length === 0) {
+                elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>`;
+                return;
             }
-            const rankColors=["text-yellow-400","text-gray-300","text-yellow-600"];
-            ranking.forEach((entry,index)=>{
-                const colorClass=index<3?rankColors[index]:"text-white",
-                listItem=` <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg"> <span class="font-bold text-2xl w-12 text-center ${colorClass}">#${index+1}</span> <span class="font-chrono text-3xl flex-grow text-center ${colorClass}">${entry.score} PTS</span> <span class="text-sm text-gray-500 w-24 text-right">${entry.date}</span> </div>`;
-                elements.rankingList.innerHTML+=listItem
-            })
-        }catch(error){
-            console.error("Error displaying ranking:",error);
-            elements.rankingList.innerHTML='<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>'
+            const rankColors = ['text-yellow-400', 'text-gray-300', 'text-yellow-600'];
+            ranking.forEach((entry, index) => {
+                const colorClass = index < 3 ? rankColors[index] : 'text-white';
+                const listItem = ` <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg"> <span class="font-bold text-2xl w-12 text-center ${colorClass}">#${index + 1}</span> <span class="font-chrono text-3xl flex-grow text-center ${colorClass}">${entry.score} PTS</span> <span class="text-sm text-gray-500 w-24 text-right">${entry.date}</span> </div>`;
+                elements.rankingList.innerHTML += listItem;
+            });
+        } catch (error) {
+            console.error("Error displaying ranking:", error);
+            elements.rankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`;
         }
     }
-    function updateSettingsUI(){
-        if(settings.sound){
-            elements.soundCheckbox.classList.add("bg-emerald-500");
-            elements.soundCheckmark.classList.remove("hidden")
-        }else{
-            elements.soundCheckbox.classList.remove("bg-emerald-500");
-            elements.soundCheckmark.classList.add("hidden")
+
+    function updateSettingsUI() {
+        if (settings.sound) {
+            elements.soundCheckbox.classList.add('bg-emerald-500');
+            elements.soundCheckmark.classList.remove('hidden');
+        } else {
+            elements.soundCheckbox.classList.remove('bg-emerald-500');
+            elements.soundCheckmark.classList.add('hidden');
         }
-        if(settings.vibration){
-            elements.vibrationCheckbox.classList.add("bg-emerald-500");
-            elements.vibrationCheckmark.classList.remove("hidden")
-        }else{
-            elements.vibrationCheckbox.classList.remove("bg-emerald-500");
-            elements.vibrationCheckmark.classList.add("hidden")
+        if (settings.vibration) {
+            elements.vibrationCheckbox.classList.add('bg-emerald-500');
+            elements.vibrationCheckmark.classList.remove('hidden');
+        } else {
+            elements.vibrationCheckbox.classList.remove('bg-emerald-500');
+            elements.vibrationCheckmark.classList.add('hidden');
         }
-        if(settings.showScore){
-            elements.showScoreCheckbox.classList.add("bg-emerald-500");
-            elements.showScoreCheckmark.classList.remove("hidden")
-        }else{
-            elements.showScoreCheckbox.classList.remove("bg-emerald-500");
-            elements.showScoreCheckmark.classList.add("hidden")
+        if (settings.showScore) {
+            elements.showScoreCheckbox.classList.add('bg-emerald-500');
+            elements.showScoreCheckmark.classList.remove('hidden');
+        } else {
+            elements.showScoreCheckbox.classList.remove('bg-emerald-500');
+            elements.showScoreCheckmark.classList.add('hidden');
         }
     }
     
@@ -482,7 +521,6 @@ function mainApp() {
             container.innerHTML = `<div class="text-center text-gray-400 p-4">Añade amigos para verlos aquí.</div>`;
             return;
         }
-
         friendsList.forEach(friend => {
             const friendCard = document.createElement('div');
             friendCard.className = 'flex items-center justify-between bg-gray-800 p-3 rounded-lg';
@@ -603,7 +641,6 @@ function mainApp() {
     function listenToFriends() {
         if (!userId) return;
         const friendsColRef = collection(db, `users/${userId}/friends`);
-
         onSnapshot(friendsColRef, async (snapshot) => {
             const friendPromises = snapshot.docs.map(friendDoc => {
                 const friendId = friendDoc.id;
@@ -620,7 +657,6 @@ function mainApp() {
         if (!userId) return;
         const requestsColRef = collection(db, `friendRequests`);
         const q = query(requestsColRef, where("to", "==", userId), where("status", "==", "pending"));
-
         onSnapshot(q, async (snapshot) => {
             checkNewRequests(snapshot.docs);
             const requestsPromises = snapshot.docs.map(requestDoc => {
@@ -646,7 +682,6 @@ function mainApp() {
             container.innerHTML = `<div class="text-center text-gray-400 p-4">No tienes solicitudes pendientes.</div>`;
             return;
         }
-
         requestsList.forEach(request => {
             const requestCard = document.createElement('div');
             requestCard.className = 'flex items-center justify-between bg-gray-700 p-3 rounded-lg';
@@ -690,11 +725,9 @@ function mainApp() {
                 const userFriendsRef = doc(db, `users/${userId}/friends/${friendId}`);
                 const friendFriendsRef = doc(db, `users/${friendId}/friends/${userId}`);
                 const batch = writeBatch(db);
-                batch.set(userFriendsRef, { addedAt: new Date });
-                batch.set(friendFriendsRef, { addedAt: new Date });
-                // -- LA CORRECCIÓN CLAVE ESTÁ AQUÍ --
-                // En lugar de borrar, actualizamos el estado.
-                batch.update(requestDocRef, { status: 'accepted' });
+                batch.set(userFriendsRef, { addedAt: new Date() });
+                batch.set(friendFriendsRef, { addedAt: new Date() });
+                batch.update(requestDocRef, { status: 'accepted' }); // <-- CORRECCIÓN
                 await batch.commit();
             } catch (error) {
                 console.error("Error accepting friend request:", error);
