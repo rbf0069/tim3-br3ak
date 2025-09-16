@@ -41,7 +41,6 @@ function mainApp() {
 
     // --- 1. ELEMENTOS DEL DOM ---
     const elements = {
-        // ... (todos tus elementos anteriores)
         mainScreen: document.getElementById('main-screen'), gameScreen: document.getElementById('game-screen'),
         howToPlayScreen: document.getElementById('how-to-play-screen'), rankingScreen: document.getElementById('ranking-screen'),
         settingsScreen: document.getElementById('settings-screen'), aboutScreen: document.getElementById('about-screen'),
@@ -73,7 +72,6 @@ function mainApp() {
         mainMenuButton: document.getElementById('main-menu-button'), resetDataPopup: document.getElementById('reset-data-popup'),
         confirmResetButton: document.getElementById('confirm-reset-button'), cancelResetButton: document.getElementById('cancel-reset-button'),
         currentScoreDisplay: document.getElementById('current-score-display'), currentScoreContainer: document.getElementById('current-score-container'),
-        // NUEVOS ELEMENTOS para las notificaciones
         friendsNotificationBadge: document.getElementById('friends-notification-badge'),
         requestsNotificationBadge: document.getElementById('requests-notification-badge'),
     };
@@ -90,7 +88,7 @@ function mainApp() {
     let settings = { sound: true, vibration: true, showScore: true };
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
-    let hasNewRequests = false; // NUEVA VARIABLE de estado
+    let hasNewRequests = false; 
 
     // --- 2.5 DATOS SIMULADOS (PARA LA SECCIÓN DE AMIGOS) ---
     const mockAllPlayers = [
@@ -109,10 +107,7 @@ function mainApp() {
     ];
     
     // --- 3. DEFINICIONES DE FUNCIONES ---
-
-    // --- NUEVAS FUNCIONES PARA NOTIFICACIONES ---
     function checkNewRequests() {
-        // Por ahora, usamos los datos MOCK. En el futuro, esto usará los datos de Firebase.
         if (mockFriendRequests.length > 0) {
             hasNewRequests = true;
         } else {
@@ -162,9 +157,8 @@ function mainApp() {
     
     initializeAppUI();
     initializeFirebase();
-    checkNewRequests(); // Comprobamos si hay notificaciones al iniciar
+    checkNewRequests();
 
-    // ... (El resto de tus funciones como loadUserData, saveProfile, etc. se mantienen igual)
     async function loadUserData(){
         if(!isAuthReady||!userId)return;
         const userDocRef=doc(db,"users",userId);
@@ -532,6 +526,34 @@ function mainApp() {
             container.appendChild(friendCard)
         })
     }
+    
+    // --- NUEVA FUNCIÓN PARA GESTIONAR SOLICITUDES (MOCK) ---
+    function handleMockRequest(requestUserId, action) {
+        const requestIndex = mockFriendRequests.findIndex(req => req.userId === requestUserId);
+        if (requestIndex === -1) return; // No se encontró la solicitud
+
+        if (action === 'accept') {
+            // 1. Encuentra los datos completos del jugador que envió la solicitud
+            const requesterData = mockAllPlayers.find(player => player.userId === requestUserId);
+            if(requesterData) {
+                 // 2. Añádelo a la lista de amigos
+                mockUserFriends.push({
+                    userId: requesterData.userId,
+                    nickname: requesterData.nickname,
+                    avatar: requesterData.avatar,
+                    bestScoreToday: requesterData.bestScoreToday
+                });
+            }
+        }
+
+        // 3. Elimina la solicitud de la lista de pendientes (tanto si se acepta como si se rechaza)
+        mockFriendRequests.splice(requestIndex, 1);
+
+        // 4. Actualiza las dos vistas para que se reflejen los cambios
+        displayFriends();
+        displayFriendRequests();
+    }
+
     function displayFriendRequests(){
         const container=elements.requestsListContainer;
         container.innerHTML="";
@@ -558,9 +580,11 @@ function mainApp() {
             const acceptButton=document.createElement("button");
             acceptButton.className="bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button";
             acceptButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            acceptButton.onclick = () => handleMockRequest(request.userId, 'accept'); // <-- AÑADIDO
             const rejectButton=document.createElement("button");
             rejectButton.className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button";
             rejectButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+            rejectButton.onclick = () => handleMockRequest(request.userId, 'reject'); // <-- AÑADIDO
             buttonsContainer.appendChild(acceptButton);
             buttonsContainer.appendChild(rejectButton);
             requestCard.appendChild(profileInfo);
@@ -584,7 +608,6 @@ function mainApp() {
             friendsTabList.classList.add("text-gray-400","border-transparent");
             friendsTabList.classList.remove("text-white","border-purple-500");
             displayFriendRequests();
-            // Lógica para quitar la notificación al ver las solicitudes
             if (hasNewRequests) {
                 hasNewRequests = false;
                 updateNotificationUI();
