@@ -88,7 +88,6 @@ function mainApp() {
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
     
     // --- 2.5 DATOS SIMULADOS (PARA LA SECCIÓN DE AMIGOS) ---
-    // Simula una base de datos global de todos los jugadores
     const mockAllPlayers = [
         { userId: 'player002', nickname: 'ChronoMaster', avatar: 'avatar-zap', bestScoreToday: 850 },
         { userId: 'player003', nickname: 'Glitch', avatar: 'avatar-ghost', bestScoreToday: 920 },
@@ -96,14 +95,10 @@ function mainApp() {
         { userId: 'player005', nickname: 'RacerX', avatar: 'avatar-diamond', bestScoreToday: 950 },
         { userId: 'player006', nickname: 'Serenity', avatar: 'avatar-moon', bestScoreToday: 810 },
     ];
-    
-    // Simula la lista de amigos del usuario actual
     let mockUserFriends = [
         { userId: 'player003', nickname: 'Glitch', avatar: 'avatar-ghost', bestScoreToday: 920 },
         { userId: 'player005', nickname: 'RacerX', avatar: 'avatar-diamond', bestScoreToday: 950 },
     ];
-    
-    // Simula las solicitudes de amistad pendientes para el usuario actual
     let mockFriendRequests = [
         { userId: 'player002', nickname: 'ChronoMaster', avatar: 'avatar-zap' },
     ];
@@ -482,6 +477,54 @@ function mainApp() {
             elements.showScoreCheckmark.classList.add('hidden');
         }
     }
+    // --- NUEVA FUNCIÓN PARA MOSTRAR AMIGOS ---
+    function displayFriends() {
+        const container = elements.friendsListContainer;
+        container.innerHTML = ''; // Limpiamos la lista para no duplicar
+
+        if (mockUserFriends.length === 0) {
+            container.innerHTML = `<div class="text-center text-gray-400 p-4">Añade amigos para verlos aquí.</div>`;
+            return;
+        }
+
+        mockUserFriends.forEach(friend => {
+            const friendCard = document.createElement('div');
+            friendCard.className = 'flex items-center justify-between bg-gray-800 p-3 rounded-lg';
+
+            const profileInfo = document.createElement('div');
+            profileInfo.className = 'flex items-center space-x-4';
+
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'w-12 h-12 p-1 bg-gray-900 rounded-full';
+            const avatar = getAvatarSvg(friend.avatar);
+            if (avatar) avatarContainer.appendChild(avatar);
+
+            const textInfo = document.createElement('div');
+            const nickEl = document.createElement('span');
+            nickEl.className = 'font-bold text-white text-lg';
+            nickEl.textContent = friend.nickname;
+            const scoreEl = document.createElement('p');
+            scoreEl.className = 'font-chrono text-sm text-yellow-400';
+            scoreEl.textContent = `Best: ${friend.bestScoreToday}`;
+            
+            textInfo.appendChild(nickEl);
+            textInfo.appendChild(scoreEl);
+
+            profileInfo.appendChild(avatarContainer);
+            profileInfo.appendChild(textInfo);
+
+            const removeButton = document.createElement('button');
+            removeButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
+            removeButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+            // Añadiremos la funcionalidad al botón más adelante
+            // removeButton.onclick = () => removeFriend(friend.userId);
+
+            friendCard.appendChild(profileInfo);
+            friendCard.appendChild(removeButton);
+            container.appendChild(friendCard);
+        });
+    }
+
     function switchFriendsTab(activeTab) {
         const { friendsTabList, friendsTabRequests, friendsListContainer, requestsListContainer } = elements;
         if (activeTab === 'list') {
@@ -639,7 +682,13 @@ function mainApp() {
     elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
     elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
     elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
-    elements.friendsButton.addEventListener('click', () => showScreen(elements.friendsScreen));
+    
+    // Modificamos el botón de amigos para que llame a la nueva función
+    elements.friendsButton.addEventListener('click', () => {
+        displayFriends(); // "Dibuja" la lista de amigos
+        showScreen(elements.friendsScreen);
+    });
+
     elements.editProfileButton.addEventListener('click', () => { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) });
     elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
     elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
