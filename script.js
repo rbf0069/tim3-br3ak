@@ -477,28 +477,23 @@ function mainApp() {
             elements.showScoreCheckmark.classList.add('hidden');
         }
     }
-    // --- NUEVA FUNCIÓN PARA MOSTRAR AMIGOS ---
+    
     function displayFriends() {
         const container = elements.friendsListContainer;
-        container.innerHTML = ''; // Limpiamos la lista para no duplicar
-
+        container.innerHTML = ''; 
         if (mockUserFriends.length === 0) {
             container.innerHTML = `<div class="text-center text-gray-400 p-4">Añade amigos para verlos aquí.</div>`;
             return;
         }
-
         mockUserFriends.forEach(friend => {
             const friendCard = document.createElement('div');
             friendCard.className = 'flex items-center justify-between bg-gray-800 p-3 rounded-lg';
-
             const profileInfo = document.createElement('div');
             profileInfo.className = 'flex items-center space-x-4';
-
             const avatarContainer = document.createElement('div');
             avatarContainer.className = 'w-12 h-12 p-1 bg-gray-900 rounded-full';
             const avatar = getAvatarSvg(friend.avatar);
             if (avatar) avatarContainer.appendChild(avatar);
-
             const textInfo = document.createElement('div');
             const nickEl = document.createElement('span');
             nickEl.className = 'font-bold text-white text-lg';
@@ -506,22 +501,53 @@ function mainApp() {
             const scoreEl = document.createElement('p');
             scoreEl.className = 'font-chrono text-sm text-yellow-400';
             scoreEl.textContent = `Best: ${friend.bestScoreToday}`;
-            
             textInfo.appendChild(nickEl);
             textInfo.appendChild(scoreEl);
-
             profileInfo.appendChild(avatarContainer);
             profileInfo.appendChild(textInfo);
-
             const removeButton = document.createElement('button');
             removeButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
             removeButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
-            // Añadiremos la funcionalidad al botón más adelante
-            // removeButton.onclick = () => removeFriend(friend.userId);
-
             friendCard.appendChild(profileInfo);
             friendCard.appendChild(removeButton);
             container.appendChild(friendCard);
+        });
+    }
+
+    function displayFriendRequests() {
+        const container = elements.requestsListContainer;
+        container.innerHTML = '';
+        if (mockFriendRequests.length === 0) {
+            container.innerHTML = `<div class="text-center text-gray-400 p-4">No tienes solicitudes pendientes.</div>`;
+            return;
+        }
+        mockFriendRequests.forEach(request => {
+            const requestCard = document.createElement('div');
+            requestCard.className = 'flex items-center justify-between bg-gray-700 p-3 rounded-lg';
+            const profileInfo = document.createElement('div');
+            profileInfo.className = 'flex items-center space-x-4';
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'w-12 h-12 p-1 bg-gray-900 rounded-full';
+            const avatar = getAvatarSvg(request.avatar);
+            if (avatar) avatarContainer.appendChild(avatar);
+            const nickEl = document.createElement('span');
+            nickEl.className = 'font-bold text-white text-lg';
+            nickEl.textContent = request.nickname;
+            profileInfo.appendChild(avatarContainer);
+            profileInfo.appendChild(nickEl);
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'flex space-x-2';
+            const acceptButton = document.createElement('button');
+            acceptButton.className = 'bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button';
+            acceptButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            const rejectButton = document.createElement('button');
+            rejectButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
+            rejectButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            buttonsContainer.appendChild(acceptButton);
+            buttonsContainer.appendChild(rejectButton);
+            requestCard.appendChild(profileInfo);
+            requestCard.appendChild(buttonsContainer);
+            container.appendChild(requestCard);
         });
     }
 
@@ -532,13 +558,15 @@ function mainApp() {
             friendsTabList.classList.add('text-white', 'border-purple-500');
             friendsTabRequests.classList.add('text-gray-400', 'border-transparent');
             friendsTabRequests.classList.remove('text-white', 'border-purple-500');
+            displayFriends();
             friendsListContainer.classList.remove('hidden');
             requestsListContainer.classList.add('hidden');
-        } else {
+        } else { // 'requests'
             friendsTabRequests.classList.remove('text-gray-400', 'border-transparent');
             friendsTabRequests.classList.add('text-white', 'border-purple-500');
             friendsTabList.classList.add('text-gray-400', 'border-transparent');
             friendsTabList.classList.remove('text-white', 'border-purple-500');
+            displayFriendRequests();
             requestsListContainer.classList.remove('hidden');
             friendsListContainer.classList.add('hidden');
         }
@@ -683,9 +711,8 @@ function mainApp() {
     elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
     elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
     
-    // Modificamos el botón de amigos para que llame a la nueva función
     elements.friendsButton.addEventListener('click', () => {
-        displayFriends(); // "Dibuja" la lista de amigos
+        switchFriendsTab('list'); // Por defecto, mostramos la lista de amigos
         showScreen(elements.friendsScreen);
     });
 
