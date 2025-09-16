@@ -585,25 +585,11 @@ function mainApp() {
         const requestDocRef = doc(requestsRef, requestId);
         try {
             const docSnap = await getDoc(requestDocRef);
-            // Si la solicitud ya existe y fue rechazada, la reactivamos.
             if (docSnap.exists() && docSnap.data().status === 'rejected') {
-                await updateDoc(requestDocRef, {
-                    from: userId,
-                    to: friendId,
-                    status: 'pending',
-                    createdAt: new Date()
-                });
+                await updateDoc(requestDocRef, { from: userId, to: friendId, status: 'pending', createdAt: new Date() });
             } else if (!docSnap.exists()) {
-                // Si no existe, la creamos.
-                await setDoc(requestDocRef, {
-                    from: userId,
-                    to: friendId,
-                    status: 'pending',
-                    createdAt: new Date()
-                });
+                await setDoc(requestDocRef, { from: userId, to: friendId, status: 'pending', createdAt: new Date() });
             }
-            // Si ya existe y está 'pending' o 'accepted', no hacemos nada.
-            
             button.textContent = "Enviada";
             button.disabled = true;
             button.classList.remove("bg-purple-600", "hover:bg-purple-700");
@@ -624,7 +610,6 @@ function mainApp() {
                 const nicknameDocRef = doc(db, 'nicknames', friendId);
                 return getDoc(nicknameDocRef);
             });
-            
             const friendNickDocs = await Promise.all(friendPromises);
             const friendsList = friendNickDocs.filter(doc => doc.exists()).map(doc => ({ userId: doc.id, ...doc.data() }));
             displayFriends(friendsList);
@@ -707,14 +692,15 @@ function mainApp() {
                 const batch = writeBatch(db);
                 batch.set(userFriendsRef, { addedAt: new Date });
                 batch.set(friendFriendsRef, { addedAt: new Date });
-                batch.delete(requestDocRef); // Aceptada la solicitud, la borramos para limpiar
+                // -- LA CORRECCIÓN CLAVE ESTÁ AQUÍ --
+                // En lugar de borrar, actualizamos el estado.
+                batch.update(requestDocRef, { status: 'accepted' });
                 await batch.commit();
             } catch (error) {
                 console.error("Error accepting friend request:", error);
             }
         } else { // 'rejected'
             try {
-                // En lugar de borrar, actualizamos el estado
                 await updateDoc(requestDocRef, { status: 'rejected' });
             } catch (error) {
                 console.error("Error rejecting friend request:", error);
