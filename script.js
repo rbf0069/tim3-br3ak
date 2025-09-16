@@ -129,8 +129,8 @@ function mainApp() {
                     userId = user.uid;
                     await loadUserData();
                     updateProfileDisplay();
-                    listenToFriendRequests(); // Escucha solicitudes
-                    listenToFriends(); // <-- NUEVO: Escucha lista de amigos
+                    listenToFriendRequests();
+                    listenToFriends();
                 }
                 isAuthReady = true;
             });
@@ -498,7 +498,6 @@ function mainApp() {
             nickEl.textContent = friend.nickname;
             const scoreEl = document.createElement('p');
             scoreEl.className = 'font-chrono text-sm text-yellow-400';
-            // NOTA: De momento no tenemos la puntuación del amigo, ponemos 0
             scoreEl.textContent = `Best: 0`;
             textInfo.appendChild(nickEl);
             textInfo.appendChild(scoreEl);
@@ -507,7 +506,6 @@ function mainApp() {
             const removeButton = document.createElement('button');
             removeButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
             removeButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
-            // removeButton.onclick = () => handleRemoveFriend(friend.userId); // Lo conectaremos en el siguiente paso
             friendCard.appendChild(profileInfo);
             friendCard.appendChild(removeButton);
             container.appendChild(friendCard);
@@ -578,25 +576,44 @@ function mainApp() {
             container.innerHTML = `<div class="text-center text-red-500 p-4">Error al buscar.</div>`;
         }
     }
+    
     async function sendFriendRequest(button) {
         const friendId = button.dataset.id;
         if (!userId || !friendId) return;
-        const requestsRef = collection(db, `friendRequests`);
+        const requestsRef = collection(db, "friendRequests");
         const requestId = userId < friendId ? `${userId}_${friendId}` : `${friendId}_${userId}`;
         const requestDocRef = doc(requestsRef, requestId);
         try {
-            await setDoc(requestDocRef, { from: userId, to: friendId, status: "pending", createdAt: new Date });
+            const docSnap = await getDoc(requestDocRef);
+            // Si la solicitud ya existe y fue rechazada, la reactivamos.
+            if (docSnap.exists() && docSnap.data().status === 'rejected') {
+                await updateDoc(requestDocRef, {
+                    from: userId,
+                    to: friendId,
+                    status: 'pending',
+                    createdAt: new Date()
+                });
+            } else if (!docSnap.exists()) {
+                // Si no existe, la creamos.
+                await setDoc(requestDocRef, {
+                    from: userId,
+                    to: friendId,
+                    status: 'pending',
+                    createdAt: new Date()
+                });
+            }
+            // Si ya existe y está 'pending' o 'accepted', no hacemos nada.
+            
             button.textContent = "Enviada";
-            button.disabled = !0;
+            button.disabled = true;
             button.classList.remove("bg-purple-600", "hover:bg-purple-700");
-            button.classList.add("bg-gray-500", "cursor-not-allowed")
+            button.classList.add("bg-gray-500", "cursor-not-allowed");
         } catch (error) {
             console.error("Error sending friend request:", error);
-            button.textContent = "Error"
+            button.textContent = "Error";
         }
     }
 
-    // --- FUNCIONES DE AMIGOS CONECTADAS A FIREBASE ---
     function listenToFriends() {
         if (!userId) return;
         const friendsColRef = collection(db, `users/${userId}/friends`);
@@ -609,11 +626,7 @@ function mainApp() {
             });
             
             const friendNickDocs = await Promise.all(friendPromises);
-
-            const friendsList = friendNickDocs
-                .filter(doc => doc.exists())
-                .map(doc => ({ userId: doc.id, ...doc.data() }));
-
+            const friendsList = friendNickDocs.filter(doc => doc.exists()).map(doc => ({ userId: doc.id, ...doc.data() }));
             displayFriends(friendsList);
         });
     }
@@ -624,28 +637,19 @@ function mainApp() {
         const q = query(requestsColRef, where("to", "==", userId), where("status", "==", "pending"));
 
         onSnapshot(q, async (snapshot) => {
-            checkNewRequests(snapshot.docs); // Comprueba si hay notificaciones
-
+            checkNewRequests(snapshot.docs);
             const requestsPromises = snapshot.docs.map(requestDoc => {
                 const senderId = requestDoc.data().from;
                 const nicknameDocRef = doc(db, 'nicknames', senderId);
                 return getDoc(nicknameDocRef);
             });
-
             const senderNickDocs = await Promise.all(requestsPromises);
-            
-            const requestsList = senderNickDocs
-                .map((nickDoc, index) => {
-                    if (nickDoc.exists()) {
-                        return { 
-                            requestId: snapshot.docs[index].id, 
-                            ...nickDoc.data() 
-                        };
-                    }
-                    return null;
-                })
-                .filter(Boolean); // Elimina nulos si un perfil no se encontrara
-
+            const requestsList = senderNickDocs.map((nickDoc, index) => {
+                if (nickDoc.exists()) {
+                    return { requestId: snapshot.docs[index].id, ...nickDoc.data() };
+                }
+                return null;
+            }).filter(Boolean);
             displayFriendRequests(requestsList);
         });
     }
@@ -703,14 +707,15 @@ function mainApp() {
                 const batch = writeBatch(db);
                 batch.set(userFriendsRef, { addedAt: new Date });
                 batch.set(friendFriendsRef, { addedAt: new Date });
-                batch.delete(requestDocRef);
+                batch.delete(requestDocRef); // Aceptada la solicitud, la borramos para limpiar
                 await batch.commit();
             } catch (error) {
                 console.error("Error accepting friend request:", error);
             }
-        } else {
+        } else { // 'rejected'
             try {
-                await deleteDoc(requestDocRef);
+                // En lugar de borrar, actualizamos el estado
+                await updateDoc(requestDocRef, { status: 'rejected' });
             } catch (error) {
                 console.error("Error rejecting friend request:", error);
             }
