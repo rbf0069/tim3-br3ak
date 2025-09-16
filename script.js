@@ -39,6 +39,7 @@ function mainApp() {
     if (window.appInitialized) return;
     window.appInitialized = true;
 
+    // --- 1. ELEMENTOS DEL DOM ---
     const elements = {
         mainScreen: document.getElementById('main-screen'), gameScreen: document.getElementById('game-screen'),
         howToPlayScreen: document.getElementById('how-to-play-screen'), rankingScreen: document.getElementById('ranking-screen'),
@@ -73,6 +74,7 @@ function mainApp() {
         currentScoreDisplay: document.getElementById('current-score-display'), currentScoreContainer: document.getElementById('current-score-container'),
     };
 
+    // --- 2. VARIABLES DE ESTADO ---
     let app, db, auth;
     let userId = null;
     let isAuthReady = false;
@@ -85,6 +87,28 @@ function mainApp() {
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
     
+    // --- 2.5 DATOS SIMULADOS (PARA LA SECCIÓN DE AMIGOS) ---
+    // Simula una base de datos global de todos los jugadores
+    const mockAllPlayers = [
+        { userId: 'player002', nickname: 'ChronoMaster', avatar: 'avatar-zap', bestScoreToday: 850 },
+        { userId: 'player003', nickname: 'Glitch', avatar: 'avatar-ghost', bestScoreToday: 920 },
+        { userId: 'player004', nickname: '8-Bit-Hero', avatar: 'avatar-square', bestScoreToday: 780 },
+        { userId: 'player005', nickname: 'RacerX', avatar: 'avatar-diamond', bestScoreToday: 950 },
+        { userId: 'player006', nickname: 'Serenity', avatar: 'avatar-moon', bestScoreToday: 810 },
+    ];
+    
+    // Simula la lista de amigos del usuario actual
+    let mockUserFriends = [
+        { userId: 'player003', nickname: 'Glitch', avatar: 'avatar-ghost', bestScoreToday: 920 },
+        { userId: 'player005', nickname: 'RacerX', avatar: 'avatar-diamond', bestScoreToday: 950 },
+    ];
+    
+    // Simula las solicitudes de amistad pendientes para el usuario actual
+    let mockFriendRequests = [
+        { userId: 'player002', nickname: 'ChronoMaster', avatar: 'avatar-zap' },
+    ];
+    
+    // --- 3. DEFINICIONES DE FUNCIONES ---
     async function initializeFirebase() {
         try {
             const firebaseConfig = {
@@ -608,7 +632,8 @@ function mainApp() {
             }
         }
     }
-    
+
+    // --- 4. INICIALIZACIÓN Y EVENT LISTENERS ---
     elements.playButton.addEventListener('click', startGameFlow);
     elements.howToPlayButton.addEventListener('click', () => showScreen(elements.howToPlayScreen));
     elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
