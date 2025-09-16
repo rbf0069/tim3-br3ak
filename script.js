@@ -90,25 +90,9 @@ function mainApp() {
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
     let hasNewRequests = false; 
 
-    // --- 2.5 DATOS SIMULADOS (PARA LA SECCIÓN DE AMIGOS) ---
-    const mockAllPlayers = [
-        { userId: 'player002', nickname: 'ChronoMaster', avatar: 'avatar-zap', bestScoreToday: 850 },
-        { userId: 'player003', nickname: 'Glitch', avatar: 'avatar-ghost', bestScoreToday: 920 },
-        { userId: 'player004', nickname: '8-Bit-Hero', avatar: 'avatar-square', bestScoreToday: 780 },
-        { userId: 'player005', nickname: 'RacerX', avatar: 'avatar-diamond', bestScoreToday: 950 },
-        { userId: 'player006', nickname: 'Serenity', avatar: 'avatar-moon', bestScoreToday: 810 },
-    ];
-    let mockUserFriends = [
-        { userId: 'player003', nickname: 'Glitch', avatar: 'avatar-ghost', bestScoreToday: 920 },
-        { userId: 'player005', nickname: 'RacerX', avatar: 'avatar-diamond', bestScoreToday: 950 },
-    ];
-    let mockFriendRequests = [
-        { userId: 'player002', nickname: 'ChronoMaster', avatar: 'avatar-zap' },
-    ];
-    
     // --- 3. DEFINICIONES DE FUNCIONES ---
-    function checkNewRequests() {
-        if (mockFriendRequests.length > 0) {
+    function checkNewRequests(requests) {
+        if (requests && requests.length > 0) {
             hasNewRequests = true;
         } else {
             hasNewRequests = false;
@@ -145,7 +129,8 @@ function mainApp() {
                     userId = user.uid;
                     await loadUserData();
                     updateProfileDisplay();
-                    listenToFriendRequests();
+                    listenToFriendRequests(); // Escucha solicitudes
+                    listenToFriends(); // <-- NUEVO: Escucha lista de amigos
                 }
                 isAuthReady = true;
             });
@@ -157,7 +142,6 @@ function mainApp() {
     
     initializeAppUI();
     initializeFirebase();
-    checkNewRequests();
 
     async function loadUserData(){
         if(!isAuthReady||!userId)return;
@@ -491,260 +475,245 @@ function mainApp() {
         }
     }
     
-    // --- NUEVA FUNCIÓN PARA ELIMINAR AMIGOS (MOCK) ---
-    function handleMockRemoveFriend(friendId) {
-        const friendIndex = mockUserFriends.findIndex(friend => friend.userId === friendId);
-        if (friendIndex > -1) {
-            mockUserFriends.splice(friendIndex, 1);
+    function displayFriends(friendsList) {
+        const container = elements.friendsListContainer;
+        container.innerHTML = "";
+        if (!friendsList || friendsList.length === 0) {
+            container.innerHTML = `<div class="text-center text-gray-400 p-4">Añade amigos para verlos aquí.</div>`;
+            return;
         }
-        displayFriends(); // Vuelve a dibujar la lista de amigos actualizada
-    }
 
-    function displayFriends(){
-        const container=elements.friendsListContainer;
-        container.innerHTML="";
-        if(mockUserFriends.length===0){
-            container.innerHTML='<div class="text-center text-gray-400 p-4">Añade amigos para verlos aquí.</div>';
-            return
-        }
-        mockUserFriends.forEach(friend=>{
-            const friendCard=document.createElement("div");
-            friendCard.className="flex items-center justify-between bg-gray-800 p-3 rounded-lg";
-            const profileInfo=document.createElement("div");
-            profileInfo.className="flex items-center space-x-4";
-            const avatarContainer=document.createElement("div");
-            avatarContainer.className="w-12 h-12 p-1 bg-gray-900 rounded-full";
-            const avatar=getAvatarSvg(friend.avatar);
-            if(avatar)avatarContainer.appendChild(avatar);
-            const textInfo=document.createElement("div"),
-            nickEl=document.createElement("span");
-            nickEl.className="font-bold text-white text-lg";
-            nickEl.textContent=friend.nickname;
-            const scoreEl=document.createElement("p");
-            scoreEl.className="font-chrono text-sm text-yellow-400";
-            scoreEl.textContent=`Best: ${friend.bestScoreToday}`;
+        friendsList.forEach(friend => {
+            const friendCard = document.createElement('div');
+            friendCard.className = 'flex items-center justify-between bg-gray-800 p-3 rounded-lg';
+            const profileInfo = document.createElement('div');
+            profileInfo.className = 'flex items-center space-x-4';
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'w-12 h-12 p-1 bg-gray-900 rounded-full';
+            const avatar = getAvatarSvg(friend.avatar);
+            if (avatar) avatarContainer.appendChild(avatar);
+            const textInfo = document.createElement('div');
+            const nickEl = document.createElement('span');
+            nickEl.className = 'font-bold text-white text-lg';
+            nickEl.textContent = friend.nickname;
+            const scoreEl = document.createElement('p');
+            scoreEl.className = 'font-chrono text-sm text-yellow-400';
+            // NOTA: De momento no tenemos la puntuación del amigo, ponemos 0
+            scoreEl.textContent = `Best: 0`;
             textInfo.appendChild(nickEl);
             textInfo.appendChild(scoreEl);
             profileInfo.appendChild(avatarContainer);
             profileInfo.appendChild(textInfo);
-            const removeButton=document.createElement("button");
-            removeButton.className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button";
-            removeButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
-            removeButton.onclick = () => handleMockRemoveFriend(friend.userId); // <-- AÑADIDO
+            const removeButton = document.createElement('button');
+            removeButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
+            removeButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+            // removeButton.onclick = () => handleRemoveFriend(friend.userId); // Lo conectaremos en el siguiente paso
             friendCard.appendChild(profileInfo);
             friendCard.appendChild(removeButton);
-            container.appendChild(friendCard)
-        })
-    }
-    
-    function handleMockRequest(requestUserId, action) {
-        const requestIndex = mockFriendRequests.findIndex(req => req.userId === requestUserId);
-        if (requestIndex === -1) return;
-
-        if (action === 'accept') {
-            const requesterData = mockAllPlayers.find(player => player.userId === requestUserId);
-            if(requesterData) {
-                mockUserFriends.push({
-                    userId: requesterData.userId,
-                    nickname: requesterData.nickname,
-                    avatar: requesterData.avatar,
-                    bestScoreToday: requesterData.bestScoreToday
-                });
-            }
-        }
-        mockFriendRequests.splice(requestIndex, 1);
-        displayFriends();
-        displayFriendRequests();
+            container.appendChild(friendCard);
+        });
     }
 
-    function displayFriendRequests(){
-        const container=elements.requestsListContainer;
-        container.innerHTML="";
-        if(mockFriendRequests.length===0){
-            container.innerHTML='<div class="text-center text-gray-400 p-4">No tienes solicitudes pendientes.</div>';
-            return
-        }
-        mockFriendRequests.forEach(request=>{
-            const requestCard=document.createElement("div");
-            requestCard.className="flex items-center justify-between bg-gray-700 p-3 rounded-lg";
-            const profileInfo=document.createElement("div");
-            profileInfo.className="flex items-center space-x-4";
-            const avatarContainer=document.createElement("div");
-            avatarContainer.className="w-12 h-12 p-1 bg-gray-900 rounded-full";
-            const avatar=getAvatarSvg(request.avatar);
-            if(avatar)avatarContainer.appendChild(avatar);
-            const nickEl=document.createElement("span");
-            nickEl.className="font-bold text-white text-lg";
-            nickEl.textContent=request.nickname;
-            profileInfo.appendChild(avatarContainer);
-            profileInfo.appendChild(nickEl);
-            const buttonsContainer=document.createElement("div");
-            buttonsContainer.className="flex space-x-2";
-            const acceptButton=document.createElement("button");
-            acceptButton.className="bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button";
-            acceptButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-            acceptButton.onclick = () => handleMockRequest(request.userId, 'accept');
-            const rejectButton=document.createElement("button");
-            rejectButton.className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button";
-            rejectButton.innerHTML='<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-            rejectButton.onclick = () => handleMockRequest(request.userId, 'reject');
-            buttonsContainer.appendChild(acceptButton);
-            buttonsContainer.appendChild(rejectButton);
-            requestCard.appendChild(profileInfo);
-            requestCard.appendChild(buttonsContainer);
-            container.appendChild(requestCard)
-        })
-    }
-    function switchFriendsTab(activeTab){
-        const {friendsTabList,friendsTabRequests,friendsListContainer,requestsListContainer}=elements;
-        if(activeTab==="list"){
-            friendsTabList.classList.remove("text-gray-400","border-transparent");
-            friendsTabList.classList.add("text-white","border-purple-500");
-            friendsTabRequests.classList.add("text-gray-400","border-transparent");
-            friendsTabRequests.classList.remove("text-white","border-purple-500");
-            displayFriends();
+    function switchFriendsTab(activeTab) {
+        const { friendsTabList, friendsTabRequests, friendsListContainer, requestsListContainer } = elements;
+        if (activeTab === 'list') {
+            friendsTabList.classList.remove("text-gray-400", "border-transparent");
+            friendsTabList.classList.add("text-white", "border-purple-500");
+            friendsTabRequests.classList.add("text-gray-400", "border-transparent");
+            friendsTabRequests.classList.remove("text-white", "border-purple-500");
             friendsListContainer.classList.remove("hidden");
-            requestsListContainer.classList.add("hidden")
-        }else{
-            friendsTabRequests.classList.remove("text-gray-400","border-transparent");
-            friendsTabRequests.classList.add("text-white","border-purple-500");
-            friendsTabList.classList.add("text-gray-400","border-transparent");
-            friendsTabList.classList.remove("text-white","border-purple-500");
-            displayFriendRequests();
+            requestsListContainer.classList.add("hidden");
+        } else { // 'requests'
+            friendsTabRequests.classList.remove("text-gray-400", "border-transparent");
+            friendsTabRequests.classList.add("text-white", "border-purple-500");
+            friendsTabList.classList.add("text-gray-400", "border-transparent");
+            friendsTabList.classList.remove("text-white", "border-purple-500");
             if (hasNewRequests) {
                 hasNewRequests = false;
                 updateNotificationUI();
             }
             requestsListContainer.classList.remove("hidden");
-            friendsListContainer.classList.add("hidden")
+            friendsListContainer.classList.add("hidden");
         }
     }
-    async function searchPlayers(searchTerm){
-        const container=elements.searchResultsContainer;
-        container.innerHTML="";
-        if(searchTerm.length<2)return;
-        const nicknamesColRef=collection(db,"nicknames"),
-        q=query(nicknamesColRef,where("nicknameLower","==",searchTerm.toLowerCase()));
-        try{
-            const querySnapshot=await getDocs(q);
-            if(querySnapshot.empty){
-                container.innerHTML='<div class="text-center text-gray-400 p-4">No se encontraron jugadores.</div>';
-                return
+
+    async function searchPlayers(searchTerm) {
+        const container = elements.searchResultsContainer;
+        container.innerHTML = "";
+        if (searchTerm.length < 2) return;
+        const nicknamesColRef = collection(db, `nicknames`);
+        const q = query(nicknamesColRef, where("nicknameLower", "==", searchTerm.toLowerCase()));
+        try {
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) {
+                container.innerHTML = `<div class="text-center text-gray-400 p-4">No se encontraron jugadores.</div>`;
+                return;
             }
-            querySnapshot.forEach(docSnap=>{
-                const playerData=docSnap.data();
-                if(playerData.userId===userId)return;
-                const resultEl=document.createElement("div");
-                resultEl.className="flex items-center justify-between bg-gray-700 p-2 rounded-lg";
-                const profileInfo=document.createElement("div");
-                profileInfo.className="flex items-center space-x-3";
-                const avatarContainer=document.createElement("div");
-                avatarContainer.className="w-10 h-10 p-1 bg-gray-800 rounded-full";
-                const avatar=getAvatarSvg(playerData.avatar);
-                if(avatar)avatarContainer.appendChild(avatar);
-                const nickEl=document.createElement("span");
-                nickEl.textContent=playerData.nickname;
+            querySnapshot.forEach(docSnap => {
+                const playerData = docSnap.data();
+                if (playerData.userId === userId) return;
+                const resultEl = document.createElement('div');
+                resultEl.className = 'flex items-center justify-between bg-gray-700 p-2 rounded-lg';
+                const profileInfo = document.createElement('div');
+                profileInfo.className = 'flex items-center space-x-3';
+                const avatarContainer = document.createElement('div');
+                avatarContainer.className = 'w-10 h-10 p-1 bg-gray-800 rounded-full';
+                const avatar = getAvatarSvg(playerData.avatar);
+                if (avatar) avatarContainer.appendChild(avatar);
+                const nickEl = document.createElement('span');
+                nickEl.textContent = playerData.nickname;
                 profileInfo.appendChild(avatarContainer);
                 profileInfo.appendChild(nickEl);
-                const addButton=document.createElement("button");
-                addButton.className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded-md text-sm action-button";
-                addButton.textContent="Añadir";
-                addButton.dataset.id=playerData.userId;
-                addButton.onclick=e=>sendFriendRequest(e.target);
+                const addButton = document.createElement('button');
+                addButton.className = 'bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded-md text-sm action-button';
+                addButton.textContent = 'Añadir';
+                addButton.dataset.id = playerData.userId;
+                addButton.onclick = (e) => sendFriendRequest(e.target);
                 resultEl.appendChild(profileInfo);
                 resultEl.appendChild(addButton);
-                container.appendChild(resultEl)
-            })
-        }catch(error){
-            console.error("Error searching players:",error);
-            container.innerHTML='<div class="text-center text-red-500 p-4">Error al buscar.</div>'
+                container.appendChild(resultEl);
+            });
+        } catch (error) {
+            console.error("Error searching players:", error);
+            container.innerHTML = `<div class="text-center text-red-500 p-4">Error al buscar.</div>`;
         }
     }
-    async function sendFriendRequest(button){
-        const friendId=button.dataset.id;
-        if(!userId||!friendId)return;
-        const requestsRef=collection(db,"friendRequests"),
-        requestId=userId<friendId?`${userId}_${friendId}`:`${friendId}_${userId}`,
-        requestDocRef=doc(requestsRef,requestId);
-        try{
-            await setDoc(requestDocRef,{from:userId,to:friendId,status:"pending",createdAt:new Date});
-            button.textContent="Enviada";
-            button.disabled=!0;
-            button.classList.remove("bg-purple-600","hover:bg-purple-700");
-            button.classList.add("bg-gray-500","cursor-not-allowed")
-        }catch(error){
-            console.error("Error sending friend request:",error);
-            button.textContent="Error"
+    async function sendFriendRequest(button) {
+        const friendId = button.dataset.id;
+        if (!userId || !friendId) return;
+        const requestsRef = collection(db, `friendRequests`);
+        const requestId = userId < friendId ? `${userId}_${friendId}` : `${friendId}_${userId}`;
+        const requestDocRef = doc(requestsRef, requestId);
+        try {
+            await setDoc(requestDocRef, { from: userId, to: friendId, status: "pending", createdAt: new Date });
+            button.textContent = "Enviada";
+            button.disabled = !0;
+            button.classList.remove("bg-purple-600", "hover:bg-purple-700");
+            button.classList.add("bg-gray-500", "cursor-not-allowed")
+        } catch (error) {
+            console.error("Error sending friend request:", error);
+            button.textContent = "Error"
         }
     }
-    function listenToFriendRequests(){
-        if(!userId)return;
-        const requestsColRef=collection(db,"friendRequests"),
-        q=query(requestsColRef,where("to","==",userId),where("status","==","pending"));
-        onSnapshot(q,async snapshot=>{
-            elements.requestsListContainer.innerHTML="";
-            if(snapshot.empty){
-                elements.requestsListContainer.innerHTML='<div class="text-center text-gray-400 p-4">No tienes solicitudes pendientes.</div>';
-                return
-            }
-            for(const docSnap of snapshot.docs){
-                const request=docSnap.data(),
-                senderId=request.from,
-                nicknamesColRef=collection(db,"nicknames"),
-                senderProfileDoc=await getDoc(doc(nicknamesColRef,senderId));
-                if(senderProfileDoc.exists()){
-                    const senderProfile=senderProfileDoc.data(),
-                    requestEl=document.createElement("div");
-                    requestEl.className="flex items-center justify-between bg-gray-700 p-2 rounded-lg";
-                    const profileInfo=document.createElement("div");
-                    profileInfo.className="flex items-center space-x-3";
-                    const avatarContainer=document.createElement("div");
-                    avatarContainer.className="w-10 h-10 p-1 bg-gray-800 rounded-full";
-                    const avatar=getAvatarSvg(senderProfile.avatar);
-                    if(avatar)avatarContainer.appendChild(avatar);
-                    const nickEl=document.createElement("span");
-                    nickEl.textContent=senderProfile.nickname;
-                    profileInfo.appendChild(avatarContainer);
-                    profileInfo.appendChild(nickEl);
-                    const buttonsContainer=document.createElement("div");
-                    buttonsContainer.className="flex space-x-2";
-                    const acceptButton=document.createElement("button");
-                    acceptButton.className="bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button";
-                    acceptButton.innerHTML='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-                    acceptButton.onclick=()=>handleFriendRequest(docSnap.id,"accepted");
-                    const rejectButton=document.createElement("button");
-                    rejectButton.className="bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button";
-                    rejectButton.innerHTML='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-                    rejectButton.onclick=()=>handleFriendRequest(docSnap.id,"rejected");
-                    buttonsContainer.appendChild(acceptButton);
-                    buttonsContainer.appendChild(rejectButton);
-                    requestEl.appendChild(profileInfo);
-                    requestEl.appendChild(buttonsContainer);
-                    elements.requestsListContainer.appendChild(requestEl)
-                }
-            }
-        })
+
+    // --- FUNCIONES DE AMIGOS CONECTADAS A FIREBASE ---
+    function listenToFriends() {
+        if (!userId) return;
+        const friendsColRef = collection(db, `users/${userId}/friends`);
+
+        onSnapshot(friendsColRef, async (snapshot) => {
+            const friendPromises = snapshot.docs.map(friendDoc => {
+                const friendId = friendDoc.id;
+                const nicknameDocRef = doc(db, 'nicknames', friendId);
+                return getDoc(nicknameDocRef);
+            });
+            
+            const friendNickDocs = await Promise.all(friendPromises);
+
+            const friendsList = friendNickDocs
+                .filter(doc => doc.exists())
+                .map(doc => ({ userId: doc.id, ...doc.data() }));
+
+            displayFriends(friendsList);
+        });
     }
-    async function handleFriendRequest(requestId,status){
-        const requestDocRef=doc(db,"friendRequests",requestId);
-        if(status==="accepted")try{
-            const requestSnap=await getDoc(requestDocRef);
-            if(!requestSnap.exists())return;
-            const requestData=requestSnap.data(),
-            friendId=requestData.from,
-            userFriendsRef=doc(db,`users/${userId}/friends/${friendId}`),
-            friendFriendsRef=doc(db,`users/${friendId}/friends/${userId}`),
-            batch=writeBatch(db);
-            batch.set(userFriendsRef,{addedAt:new Date});
-            batch.set(friendFriendsRef,{addedAt:new Date});
-            batch.delete(requestDocRef);
-            await batch.commit()
-        }catch(error){
-            console.error("Error accepting friend request:",error)
-        }else try{
-            await deleteDoc(requestDocRef)
-        }catch(error){
-            console.error("Error rejecting friend request:",error)
+
+    function listenToFriendRequests() {
+        if (!userId) return;
+        const requestsColRef = collection(db, `friendRequests`);
+        const q = query(requestsColRef, where("to", "==", userId), where("status", "==", "pending"));
+
+        onSnapshot(q, async (snapshot) => {
+            checkNewRequests(snapshot.docs); // Comprueba si hay notificaciones
+
+            const requestsPromises = snapshot.docs.map(requestDoc => {
+                const senderId = requestDoc.data().from;
+                const nicknameDocRef = doc(db, 'nicknames', senderId);
+                return getDoc(nicknameDocRef);
+            });
+
+            const senderNickDocs = await Promise.all(requestsPromises);
+            
+            const requestsList = senderNickDocs
+                .map((nickDoc, index) => {
+                    if (nickDoc.exists()) {
+                        return { 
+                            requestId: snapshot.docs[index].id, 
+                            ...nickDoc.data() 
+                        };
+                    }
+                    return null;
+                })
+                .filter(Boolean); // Elimina nulos si un perfil no se encontrara
+
+            displayFriendRequests(requestsList);
+        });
+    }
+
+    function displayFriendRequests(requestsList) {
+        const container = elements.requestsListContainer;
+        container.innerHTML = "";
+        if (!requestsList || requestsList.length === 0) {
+            container.innerHTML = `<div class="text-center text-gray-400 p-4">No tienes solicitudes pendientes.</div>`;
+            return;
+        }
+
+        requestsList.forEach(request => {
+            const requestCard = document.createElement('div');
+            requestCard.className = 'flex items-center justify-between bg-gray-700 p-3 rounded-lg';
+            const profileInfo = document.createElement('div');
+            profileInfo.className = 'flex items-center space-x-4';
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'w-12 h-12 p-1 bg-gray-900 rounded-full';
+            const avatar = getAvatarSvg(request.avatar);
+            if (avatar) avatarContainer.appendChild(avatar);
+            const nickEl = document.createElement('span');
+            nickEl.className = 'font-bold text-white text-lg';
+            nickEl.textContent = request.nickname;
+            profileInfo.appendChild(avatarContainer);
+            profileInfo.appendChild(nickEl);
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'flex space-x-2';
+            const acceptButton = document.createElement('button');
+            acceptButton.className = 'bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button';
+            acceptButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            acceptButton.onclick = () => handleFriendRequest(request.requestId, 'accepted');
+            const rejectButton = document.createElement('button');
+            rejectButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
+            rejectButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            rejectButton.onclick = () => handleFriendRequest(request.requestId, 'rejected');
+            buttonsContainer.appendChild(acceptButton);
+            buttonsContainer.appendChild(rejectButton);
+            requestCard.appendChild(profileInfo);
+            requestCard.appendChild(buttonsContainer);
+            container.appendChild(requestCard);
+        });
+    }
+    
+    async function handleFriendRequest(requestId, status) {
+        const requestDocRef = doc(db, "friendRequests", requestId);
+        if (status === "accepted") {
+            try {
+                const requestSnap = await getDoc(requestDocRef);
+                if (!requestSnap.exists()) return;
+                const requestData = requestSnap.data();
+                const friendId = requestData.from;
+                const userFriendsRef = doc(db, `users/${userId}/friends/${friendId}`);
+                const friendFriendsRef = doc(db, `users/${friendId}/friends/${userId}`);
+                const batch = writeBatch(db);
+                batch.set(userFriendsRef, { addedAt: new Date });
+                batch.set(friendFriendsRef, { addedAt: new Date });
+                batch.delete(requestDocRef);
+                await batch.commit();
+            } catch (error) {
+                console.error("Error accepting friend request:", error);
+            }
+        } else {
+            try {
+                await deleteDoc(requestDocRef);
+            } catch (error) {
+                console.error("Error rejecting friend request:", error);
+            }
         }
     }
 
@@ -754,12 +723,10 @@ function mainApp() {
     elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
     elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
     elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
-    
     elements.friendsButton.addEventListener('click', () => {
         switchFriendsTab('list');
         showScreen(elements.friendsScreen);
     });
-
     elements.editProfileButton.addEventListener('click', () => { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) });
     elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
     elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
@@ -791,6 +758,5 @@ function mainApp() {
             updateProfileUI();
         });
     });
-
 }
 checkPasswordAndInit();
