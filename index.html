@@ -35,8 +35,12 @@
             <h1 class="font-title text-5xl sm:text-6xl font-bold mb-8 whitespace-nowrap">TIM<span class="text-red-500">3</span> BR<span class="text-red-500">3</span>AK</h1>
             <div class="flex flex-col space-y-4 w-full items-center">
                 <button id="play-button" class="action-button w-full max-w-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl py-4 rounded-xl">¡JUGAR!</button>
-                <button id="friends-button" class="action-button w-full max-w-xs bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">AMIGOS</button>
-                <button id="how-to-play-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">CÓMO JUGAR</button>
+<button id="friends-button" class="action-button w-full max-w-xs bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">AMIGOS</button>
+
+<button id="friends-button" class="relative action-button w-full max-w-xs bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">
+    AMIGOS
+    <span id="friends-notification-badge" class="hidden absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full"></span>
+</button>                <button id="how-to-play-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">CÓMO JUGAR</button>
                 <button id="ranking-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">RANKING</button>
                 <button id="settings-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">AJUSTES</button>
                 <button id="about-button" class="action-button w-full max-w-xs bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl">ACERCA DE</button>
@@ -172,8 +176,12 @@
             <div class="w-full max-w-md mx-auto flex-shrink-0">
                  <div class="flex border-b border-gray-700 mb-4">
                      <button id="friends-tab-list" class="flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-white border-purple-500">Mis Amigos</button>
-                     <button id="friends-tab-requests" class="flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-gray-400 border-transparent hover:text-white">Solicitudes</button>
-                 </div>
+<button id="friends-tab-requests" class="flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-gray-400 border-transparent hover:text-white">Solicitudes</button>
+
+<button id="friends-tab-requests" class="relative flex-1 py-2 text-center font-semibold border-b-2 transition-colors text-gray-400 border-transparent hover:text-white">
+    Solicitudes
+    <span id="requests-notification-badge" class="hidden absolute top-1 right-1/4 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+</button>                 </div>
                  <div class="relative mb-4">
                      <input id="add-friend-input" type="text" class="w-full p-3 pl-10 bg-gray-800 border-2 border-gray-600 rounded-lg focus:border-purple-500 focus:outline-none" placeholder="Buscar jugador por Nickname...">
                      <div class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -255,3 +263,4 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
