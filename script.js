@@ -2,6 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js"; // <-- ¡NUEVA IMPORTACIÓN!
 
 // --- LÓGICA DE CONTRASEÑA ---
 const APP_PASSWORD = "speed";
@@ -77,7 +78,7 @@ function mainApp() {
     };
 
     // --- 2. VARIABLES DE ESTADO ---
-    let app, db, auth;
+    let app, db, auth, functions; // <-- functions añadido
     let userId = null;
     let isAuthReady = false;
     let userProfile = { nickname: '', avatar: 'avatar-circle' };
@@ -124,6 +125,8 @@ function mainApp() {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+            functions = getFunctions(app, 'us-central1'); // <-- Inicializamos Functions
+
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
@@ -714,30 +717,27 @@ function mainApp() {
         });
     }
     
-    async function handleFriendRequest(requestId, status) {
-        const requestDocRef = doc(db, "friendRequests", requestId);
-        if (status === "accepted") {
-            try {
-                const requestSnap = await getDoc(requestDocRef);
-                if (!requestSnap.exists()) return;
-                const requestData = requestSnap.data();
-                const friendId = requestData.from;
-                const userFriendsRef = doc(db, `users/${userId}/friends/${friendId}`);
-                const friendFriendsRef = doc(db, `users/${friendId}/friends/${userId}`);
-                const batch = writeBatch(db);
-                batch.set(userFriendsRef, { addedAt: new Date() });
-                batch.set(friendFriendsRef, { addedAt: new Date() });
-                batch.update(requestDocRef, { status: 'accepted' }); // <-- CORRECCIÓN
-                await batch.commit();
-            } catch (error) {
-                console.error("Error accepting friend request:", error);
-            }
-        } else { // 'rejected'
-            try {
-                await updateDoc(requestDocRef, { status: 'rejected' });
-            } catch (error) {
-                console.error("Error rejecting friend request:", error);
-            }
+    // --- FUNCIÓN MODIFICADA PARA LLAMAR A LA NUBE ---
+    async function handleFriendRequest(requestId, action) {
+        // Obtenemos una referencia a nuestra Cloud Function
+        const handleRequest = httpsCallable(functions, 'handleFriendRequest');
+        try {
+            // Desactivamos los botones para evitar doble clic
+            const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
+            buttons.forEach(btn => btn.disabled = true);
+            
+            console.log(`Llamando a la Cloud Function con: requestId=${requestId}, action=${action}`);
+            // Llamamos a la función y le pasamos los datos
+            const result = await handleRequest({ requestId, action });
+            console.log("Respuesta de la Cloud Function:", result.data);
+            
+            // La magia del 'onSnapshot' se encargará de actualizar la interfaz automáticamente.
+            // No necesitamos hacer nada más aquí.
+        } catch (error) {
+            console.error("Error al llamar a la Cloud Function:", error);
+            // Reactivamos los botones si hay un error
+            const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
+            buttons.forEach(btn => btn.disabled = false);
         }
     }
 
