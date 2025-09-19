@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js"; // <-- ¡NUEVA IMPORTACIÓN!
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 // --- LÓGICA DE CONTRASEÑA ---
 const APP_PASSWORD = "speed";
@@ -78,7 +78,7 @@ function mainApp() {
     };
 
     // --- 2. VARIABLES DE ESTADO ---
-    let app, db, auth, functions; // <-- functions añadido
+    let app, db, auth, functions;
     let userId = null;
     let isAuthReady = false;
     let userProfile = { nickname: '', avatar: 'avatar-circle' };
@@ -125,7 +125,7 @@ function mainApp() {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            functions = getFunctions(app, 'us-central1'); // <-- Inicializamos Functions
+            functions = getFunctions(app, 'us-central1');
 
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
@@ -704,11 +704,17 @@ function mainApp() {
             const acceptButton = document.createElement('button');
             acceptButton.className = 'bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button';
             acceptButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-            acceptButton.onclick = () => handleFriendRequest(request.requestId, 'accepted');
+            acceptButton.onclick = () => {
+                console.log("DEBUG: Botón Aceptar pulsado. Llamando a handleFriendRequest..."); // <-- CHIVATO 1
+                handleFriendRequest(request.requestId, 'accepted');
+            };
             const rejectButton = document.createElement('button');
             rejectButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
             rejectButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
-            rejectButton.onclick = () => handleFriendRequest(request.requestId, 'rejected');
+            rejectButton.onclick = () => {
+                console.log("DEBUG: Botón Rechazar pulsado. Llamando a handleFriendRequest..."); // <-- CHIVATO 1
+                handleFriendRequest(request.requestId, 'rejected');
+            };
             buttonsContainer.appendChild(acceptButton);
             buttonsContainer.appendChild(rejectButton);
             requestCard.appendChild(profileInfo);
@@ -717,25 +723,19 @@ function mainApp() {
         });
     }
     
-    // --- FUNCIÓN MODIFICADA PARA LLAMAR A LA NUBE ---
     async function handleFriendRequest(requestId, action) {
-        // Obtenemos una referencia a nuestra Cloud Function
+        console.log("DEBUG: Dentro de handleFriendRequest. Preparando llamada a la nube..."); // <-- CHIVATO 2
         const handleRequest = httpsCallable(functions, 'handleFriendRequest');
         try {
-            // Desactivamos los botones para evitar doble clic
             const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = true);
             
-            console.log(`Llamando a la Cloud Function con: requestId=${requestId}, action=${action}`);
-            // Llamamos a la función y le pasamos los datos
+            console.log(`DEBUG: Llamando a la Cloud Function con: requestId=${requestId}, action=${action}`); // <-- CHIVATO 3
             const result = await handleRequest({ requestId, action });
-            console.log("Respuesta de la Cloud Function:", result.data);
+            console.log("DEBUG: Respuesta RECIBIDA de la Cloud Function:", result.data); // <-- CHIVATO 4
             
-            // La magia del 'onSnapshot' se encargará de actualizar la interfaz automáticamente.
-            // No necesitamos hacer nada más aquí.
         } catch (error) {
-            console.error("Error al llamar a la Cloud Function:", error);
-            // Reactivamos los botones si hay un error
+            console.error("DEBUG: ERROR al llamar a la Cloud Function:", error); // <-- CHIVATO DE ERRORES
             const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = false);
         }
