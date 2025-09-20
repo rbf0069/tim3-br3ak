@@ -125,7 +125,9 @@ function mainApp() {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            functions = getFunctions(app, 'us-central1');
+            // ----------- LA CORRECCIÓN CLAVE ESTÁ AQUÍ -----------
+            functions = getFunctions(app, 'us-central1'); 
+            // ----------------------------------------------------
 
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
@@ -704,17 +706,11 @@ function mainApp() {
             const acceptButton = document.createElement('button');
             acceptButton.className = 'bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button';
             acceptButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-            acceptButton.onclick = () => {
-                console.log("DEBUG: Botón Aceptar pulsado. Llamando a handleFriendRequest..."); // <-- CHIVATO 1
-                handleFriendRequest(request.requestId, 'accepted');
-            };
+            acceptButton.onclick = () => handleFriendRequest(request.requestId, 'accepted');
             const rejectButton = document.createElement('button');
             rejectButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
             rejectButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
-            rejectButton.onclick = () => {
-                console.log("DEBUG: Botón Rechazar pulsado. Llamando a handleFriendRequest..."); // <-- CHIVATO 1
-                handleFriendRequest(request.requestId, 'rejected');
-            };
+            rejectButton.onclick = () => handleFriendRequest(request.requestId, 'rejected');
             buttonsContainer.appendChild(acceptButton);
             buttonsContainer.appendChild(rejectButton);
             requestCard.appendChild(profileInfo);
@@ -724,18 +720,15 @@ function mainApp() {
     }
     
     async function handleFriendRequest(requestId, action) {
-        console.log("DEBUG: Dentro de handleFriendRequest. Preparando llamada a la nube..."); // <-- CHIVATO 2
         const handleRequest = httpsCallable(functions, 'handleFriendRequest');
         try {
             const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = true);
-            
-            console.log(`DEBUG: Llamando a la Cloud Function con: requestId=${requestId}, action=${action}`); // <-- CHIVATO 3
+            console.log(`Llamando a la Cloud Function con: requestId=${requestId}, action=${action}`);
             const result = await handleRequest({ requestId, action });
-            console.log("DEBUG: Respuesta RECIBIDA de la Cloud Function:", result.data); // <-- CHIVATO 4
-            
+            console.log("Respuesta de la Cloud Function:", result.data);
         } catch (error) {
-            console.error("DEBUG: ERROR al llamar a la Cloud Function:", error); // <-- CHIVATO DE ERRORES
+            console.error("Error al llamar a la Cloud Function:", error);
             const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = false);
         }
