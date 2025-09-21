@@ -293,11 +293,15 @@ function mainApp() {
     function updateProfileDisplay() {
         elements.profileDisplay.innerHTML = '';
         if (userProfile.nickname) {
+            // CORRECCIÓN PARA EL BUG DEL AVATAR GIGANTE
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'w-6 h-6'; // Damos el tamaño al contenedor
             const avatar = getAvatarSvg(userProfile.avatar);
             if (avatar) {
-                avatar.classList.add('w-6', 'h-6');
-                elements.profileDisplay.appendChild(avatar);
+                avatarContainer.appendChild(avatar);
             }
+            elements.profileDisplay.appendChild(avatarContainer);
+            
             const nickEl = document.createElement('span');
             nickEl.textContent = userProfile.nickname;
             elements.profileDisplay.appendChild(nickEl);
