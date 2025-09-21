@@ -742,7 +742,13 @@ function mainApp() {
     }
 
     async function deleteUserByNickname() {
-        if (!isAuthReady) return;
+// --- AÑADE ESTA LÍNEA AQUÍ ---
+    console.log("Comprobando usuario antes de llamar:", auth.currentUser);
+    // -----------------------------
+
+    if (!isAuthReady) return;
+    const nicknameToDelete = elements.deleteNicknameInput.value.trim();
+    // ...el resto de la función sigue igual...        if (!isAuthReady) return;
         const nicknameToDelete = elements.deleteNicknameInput.value.trim();
         if (!nicknameToDelete) {
             elements.deleteFeedback.textContent = "Introduce un nick.";
@@ -855,4 +861,5 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
