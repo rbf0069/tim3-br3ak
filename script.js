@@ -144,7 +144,6 @@ function mainApp() {
                 userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' };
                 selectedAvatar = userProfile.avatar;
             } else {
-                // Es un usuario nuevo, inicializamos su perfil por si acaso
                 userProfile = { nickname: '', avatar: 'avatar-circle' };
                 selectedAvatar = 'avatar-circle';
             }
