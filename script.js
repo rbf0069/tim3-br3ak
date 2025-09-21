@@ -8,12 +8,13 @@ import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/
 // Borra estas líneas de ejemplo y pega las tuyas.
 // Las encontrarás en tu proyecto de Firebase > Rueda dentada (Ajustes) > Mis Apps > Configuración.
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_AUTH_DOMAIN",
-    projectId: "TU_PROJECT_ID",
-    storageBucket: "TU_STORAGE_BUCKET",
-    messagingSenderId: "TU_MESSAGING_SENDER_ID",
-    appId: "TU_APP_ID"
+  apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
+  authDomain: "tim3-br3ak.firebaseapp.com",
+  projectId: "tim3-br3ak",
+  storageBucket: "tim3-br3ak.firebasestorage.app",
+  messagingSenderId: "1029726018714",
+  appId: "1:1029726018714:web:16ed60f60bdf57ebe2d323",
+  measurementId: "G-VGSD8GC449"
 };
 // ####################################################################
 
@@ -854,3 +855,4 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
