@@ -542,7 +542,7 @@ function mainApp() {
             nickEl.textContent = friend.nickname;
             const scoreEl = document.createElement('p');
             scoreEl.className = 'font-chrono text-sm text-yellow-400';
-            scoreEl.textContent = `Best: 0`; // Aún no tenemos esta info, lo haremos más adelante
+            scoreEl.textContent = `Best: 0`;
             textInfo.appendChild(nickEl);
             textInfo.appendChild(scoreEl);
             profileInfo.appendChild(avatarContainer);
