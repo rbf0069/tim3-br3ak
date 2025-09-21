@@ -143,6 +143,10 @@ function mainApp() {
                 settings = data.settings || { sound: true, vibration: true, showScore: true };
                 userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' };
                 selectedAvatar = userProfile.avatar;
+            } else {
+                // Es un usuario nuevo, inicializamos su perfil por si acaso
+                userProfile = { nickname: '', avatar: 'avatar-circle' };
+                selectedAvatar = 'avatar-circle';
             }
         } catch (error) {
             console.error("Error loading user data:", error);
@@ -152,7 +156,6 @@ function mainApp() {
     }
 
     async function saveProfile() {
-        if (!isAuthReady) return;
         const newNickname = elements.nicknameInput.value.trim();
         const feedbackEl = elements.nicknameFeedback;
         if (newNickname.length < 2) {
@@ -201,7 +204,6 @@ function mainApp() {
     }
 
     async function saveBestScore() {
-        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         const today = new Date().toLocaleDateString();
         try {
@@ -212,7 +214,6 @@ function mainApp() {
     }
 
     async function saveRanking(newScore) {
-        if (!isAuthReady) return;
         if (newScore <= 0) return;
         const userDocRef = doc(db, "users", userId);
         try {
@@ -230,7 +231,6 @@ function mainApp() {
     }
 
     async function resetAllData() {
-        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         try {
             await setDoc(userDocRef, { bestScore: { score: 0, date: new Date().toLocaleDateString() }, ranking: [] }, { merge: true });
@@ -242,7 +242,6 @@ function mainApp() {
     }
 
     async function saveSettings() {
-        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         try {
             await setDoc(userDocRef, { settings: settings }, { merge: true });
@@ -327,7 +326,6 @@ function mainApp() {
     }
 
     function startGameFlow() {
-        if (!isAuthReady) return;
         resetGame();
         showScreen(elements.gameScreen);
     }
@@ -458,7 +456,6 @@ function mainApp() {
     }
 
     async function displayRanking() {
-        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         elements.rankingList.innerHTML = '';
         try {
@@ -564,7 +561,6 @@ function mainApp() {
     }
 
     async function searchPlayers(searchTerm) {
-        if (!isAuthReady) return;
         const container = elements.searchResultsContainer;
         container.innerHTML = "";
         if (searchTerm.length < 2) return;
@@ -607,7 +603,6 @@ function mainApp() {
     }
     
     async function sendFriendRequest(button) {
-        if (!isAuthReady) return;
         const friendId = button.dataset.id;
         if (!userId || !friendId) return;
         const requestsRef = collection(db, "friendRequests");
@@ -710,10 +705,7 @@ function mainApp() {
     }
     
     async function handleFriendRequest(requestId, action) {
-        if (!isAuthReady) {
-            console.error("Intento de acción sin que la autenticación esté lista.");
-            return;
-        }
+        if (!isAuthReady) return;
         const handleRequest = httpsCallable(functions, 'handleFriendRequest');
         try {
             const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
@@ -736,10 +728,7 @@ function mainApp() {
     }
 
     async function deleteUserByNickname() {
-        if (!isAuthReady) {
-            elements.deleteFeedback.textContent = "La app no está lista. Espera.";
-            return;
-        }
+        if (!isAuthReady) return;
         const nicknameToDelete = elements.deleteNicknameInput.value.trim();
         if (!nicknameToDelete) {
             elements.deleteFeedback.textContent = "Introduce un nick.";
@@ -804,6 +793,9 @@ function mainApp() {
             updateProfileUI();
         });
     });
+    
+    // --- INICIO DE LA APP ---
+    startApp();
 }
 
 // Punto de entrada inicial
