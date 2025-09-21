@@ -4,6 +4,20 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
+// ### PASO 2 IMPORTANTE: Pega aquí tu configuración de Firebase ###
+// Borra estas líneas de ejemplo y pega las tuyas.
+// Las encontrarás en tu proyecto de Firebase > Rueda dentada (Ajustes) > Mis Apps > Configuración.
+const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    projectId: "TU_PROJECT_ID",
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_MESSAGING_SENDER_ID",
+    appId: "TU_APP_ID"
+};
+// ####################################################################
+
+
 // --- LÓGICA DE CONTRASEÑA ---
 const APP_PASSWORD = "speed";
 const passwordScreen = document.getElementById('password-protection-screen');
@@ -92,13 +106,13 @@ function mainApp() {
     let settings = { sound: true, vibration: true, showScore: true };
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
-    let hasNewRequests = false; 
+    let hasNewRequests = false;
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
     function setAppLoading(isLoading) {
         const mainButtons = [
-            elements.playButton, elements.friendsButton, elements.howToPlayButton, 
+            elements.playButton, elements.friendsButton, elements.howToPlayButton,
             elements.rankingButton, elements.settingsButton, elements.aboutButton
         ];
         mainButtons.forEach(button => {
@@ -281,12 +295,12 @@ function mainApp() {
                 avatarContainer.appendChild(avatar);
             }
             elements.profileDisplay.appendChild(avatarContainer);
-            
+
             const nickEl = document.createElement('span');
             nickEl.textContent = userProfile.nickname;
             elements.profileDisplay.appendChild(nickEl);
         } else {
-            elements.profileDisplay.textContent = `Player ID: ${userId || 'Cargando...'}`;
+            elements.profileDisplay.textContent = `Player ID: ${userId ? userId.substring(0, 6) : 'Cargando...'}`;
         }
     }
 
@@ -499,7 +513,7 @@ function mainApp() {
             elements.showScoreCheckmark.classList.add('hidden');
         }
     }
-    
+
     function displayFriends(friendsList) {
         const container = elements.friendsListContainer;
         container.innerHTML = "";
@@ -600,7 +614,7 @@ function mainApp() {
             container.innerHTML = `<div class="text-center text-red-500 p-4">Error al buscar.</div>`;
         }
     }
-    
+
     async function sendFriendRequest(button) {
         const friendId = button.dataset.id;
         if (!userId || !friendId) return;
@@ -628,9 +642,9 @@ function mainApp() {
         if (!userId) return;
         const friendsColRef = collection(db, `users/${userId}/friends`);
         onSnapshot(friendsColRef, (snapshot) => {
-            const friendsList = snapshot.docs.map(doc => ({ 
-                userId: doc.id, 
-                ...doc.data() 
+            const friendsList = snapshot.docs.map(doc => ({
+                userId: doc.id,
+                ...doc.data()
             }));
             displayFriends(friendsList);
         }, (error) => {
@@ -702,23 +716,23 @@ function mainApp() {
             container.appendChild(requestCard);
         });
     }
-    
+
     async function handleFriendRequest(requestId, action) {
         if (!isAuthReady) return;
         const handleRequest = httpsCallable(functions, 'handleFriendRequest');
         try {
             const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = true);
-            
-            await handleRequest({ 
-                requestId, 
-                action, 
+
+            await handleRequest({
+                requestId,
+                action,
                 accepterProfile: {
                     nickname: userProfile.nickname,
                     avatar: userProfile.avatar
                 }
             });
-            
+
         } catch (error) {
             console.error("Error al llamar a la Cloud Function:", error);
             const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
@@ -733,7 +747,7 @@ function mainApp() {
             elements.deleteFeedback.textContent = "Introduce un nick.";
             return;
         }
-        
+
         elements.deleteFeedback.textContent = "Borrando...";
         const deleteFunction = httpsCallable(functions, 'deleteUserByNickname');
         try {
@@ -748,19 +762,60 @@ function mainApp() {
         }
     }
 
+    // --- NUEVA FUNCIÓN DE ARRANQUE ---
+    function startApp() {
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            functions = getFunctions(app, 'us-central1'); // Especifica tu región si es necesario
+
+            setAppLoading(true);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // El usuario está logueado
+                    userId = user.uid;
+                    isAuthReady = true;
+
+                    await loadUserData();
+                    updateProfileDisplay();
+                    listenToFriends();
+                    listenToFriendRequests();
+                    
+                    setAppLoading(false);
+                } else {
+                    // No hay usuario, intentamos logueo anónimo
+                    isAuthReady = false;
+                    signInAnonymously(auth).catch((error) => {
+                        console.error("Error en el login anónimo:", error);
+                        // Aquí podrías mostrar un error al usuario si el login falla
+                    });
+                }
+            });
+
+        } catch (e) {
+            console.error("Error inicializando Firebase. ¿Pegaste bien tu 'firebaseConfig'?", e);
+            alert("¡Error Crítico! La configuración de Firebase no es correcta. Revisa la consola para más detalles (F12).");
+        }
+    }
+
+
     // --- 4. INICIALIZACIÓN Y EVENT LISTENERS ---
+    initializeAppUI();
+
     elements.playButton.addEventListener('click', startGameFlow);
     elements.howToPlayButton.addEventListener('click', () => showScreen(elements.howToPlayScreen));
-    elements.rankingButton.addEventListener('click', async () => { if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
+    elements.rankingButton.addEventListener('click', async () => { if (isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
     elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
     elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
     elements.friendsButton.addEventListener('click', () => {
-        if(isAuthReady) {
+        if (isAuthReady) {
             switchFriendsTab('list');
             showScreen(elements.friendsScreen);
         }
     });
-    elements.editProfileButton.addEventListener('click', () => { if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
+    elements.editProfileButton.addEventListener('click', () => { if (isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
     elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
     elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
     elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
@@ -792,8 +847,8 @@ function mainApp() {
             updateProfileUI();
         });
     });
-    
-    // --- INICIO DE LA APP ---
+
+    // --- ARRANQUE DE LA APP ---
     startApp();
 }
 
