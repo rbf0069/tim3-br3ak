@@ -92,13 +92,13 @@ function mainApp() {
     let settings = { sound: true, vibration: true, showScore: true };
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
-    let hasNewRequests = false;
+    let hasNewRequests = false; 
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
     function setAppLoading(isLoading) {
         const mainButtons = [
-            elements.playButton, elements.friendsButton, elements.howToPlayButton,
+            elements.playButton, elements.friendsButton, elements.howToPlayButton, 
             elements.rankingButton, elements.settingsButton, elements.aboutButton
         ];
         mainButtons.forEach(button => {
@@ -702,7 +702,7 @@ function mainApp() {
             rejectButton.dataset.requestId = request.requestId;
             rejectButton.onclick = () => handleFriendRequest(request.requestId, 'rejected');
             buttonsContainer.appendChild(acceptButton);
-buttonsContainer.appendChild(rejectButton);
+            buttonsContainer.appendChild(rejectButton);
             requestCard.appendChild(profileInfo);
             requestCard.appendChild(buttonsContainer);
             container.appendChild(requestCard);
@@ -763,14 +763,16 @@ buttonsContainer.appendChild(rejectButton);
     // --- 4. INICIALIZACIÓN Y EVENT LISTENERS ---
     elements.playButton.addEventListener('click', startGameFlow);
     elements.howToPlayButton.addEventListener('click', () => showScreen(elements.howToPlayScreen));
-    elements.rankingButton.addEventListener('click', async () => { await displayRanking(); showScreen(elements.rankingScreen); });
+    elements.rankingButton.addEventListener('click', async () => { if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
     elements.settingsButton.addEventListener('click', () => showScreen(elements.settingsScreen));
     elements.aboutButton.addEventListener('click', () => showScreen(elements.aboutScreen));
     elements.friendsButton.addEventListener('click', () => {
-        switchFriendsTab('list');
-        showScreen(elements.friendsScreen);
+        if(isAuthReady) {
+            switchFriendsTab('list');
+            showScreen(elements.friendsScreen);
+        }
     });
-    elements.editProfileButton.addEventListener('click', () => { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) });
+    elements.editProfileButton.addEventListener('click', () => { if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
     elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
     elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
     elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
@@ -804,4 +806,5 @@ buttonsContainer.appendChild(rejectButton);
     });
 }
 
+// Punto de entrada inicial
 checkPasswordAndInit();
