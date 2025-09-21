@@ -4,17 +4,14 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, collection, query, where, getDocs, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-// ### PASO 2 IMPORTANTE: Pega aquí tu configuración de Firebase ###
-// Borra estas líneas de ejemplo y pega las tuyas.
-// Las encontrarás en tu proyecto de Firebase > Rueda dentada (Ajustes) > Mis Apps > Configuración.
+// ### CONFIGURACIÓN DE FIREBASE ###
 const firebaseConfig = {
-  apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
-  authDomain: "tim3-br3ak.firebaseapp.com",
-  projectId: "tim3-br3ak",
-  storageBucket: "tim3-br3ak.firebasestorage.app",
-  messagingSenderId: "1029726018714",
-  appId: "1:1029726018714:web:16ed60f60bdf57ebe2d323",
-  measurementId: "G-VGSD8GC449"
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    projectId: "TU_PROJECT_ID",
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_MESSAGING_SENDER_ID",
+    appId: "TU_APP_ID"
 };
 // ####################################################################
 
@@ -111,6 +108,8 @@ function mainApp() {
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
+    // ... (Aquí van todas las funciones desde setAppLoading hasta displayFriendRequests) ...
+    // ... (No las pego todas para no hacer esto larguísimo, pero están en el código de abajo) ...
     function setAppLoading(isLoading) {
         const mainButtons = [
             elements.playButton, elements.friendsButton, elements.howToPlayButton,
@@ -742,13 +741,8 @@ function mainApp() {
     }
 
     async function deleteUserByNickname() {
-// --- AÑADE ESTA LÍNEA AQUÍ ---
-    console.log("Comprobando usuario antes de llamar:", auth.currentUser);
-    // -----------------------------
-
-    if (!isAuthReady) return;
-    const nicknameToDelete = elements.deleteNicknameInput.value.trim();
-    // ...el resto de la función sigue igual...        if (!isAuthReady) return;
+        console.log("Comprobando usuario antes de llamar:", auth.currentUser);
+        if (!isAuthReady) return;
         const nicknameToDelete = elements.deleteNicknameInput.value.trim();
         if (!nicknameToDelete) {
             elements.deleteFeedback.textContent = "Introduce un nick.";
@@ -861,5 +855,3 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
-
-
