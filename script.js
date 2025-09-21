@@ -95,6 +95,23 @@ function mainApp() {
     let hasNewRequests = false; 
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
+
+    function setAppLoading(isLoading) {
+        const mainButtons = [
+            elements.playButton, elements.friendsButton, elements.howToPlayButton, 
+            elements.rankingButton, elements.settingsButton, elements.aboutButton
+        ];
+        mainButtons.forEach(button => {
+            if (isLoading) {
+                button.disabled = true;
+                button.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                button.disabled = false;
+                button.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+    }
+
     function checkNewRequests(requests) {
         if (requests && requests.length > 0) {
             hasNewRequests = true;
@@ -114,7 +131,10 @@ function mainApp() {
         }
     }
 
-    async function initializeFirebase() {
+    async function initializeApp() {
+        setAppLoading(true); // Bloqueamos la app al inicio
+        initializeAppUI();
+
         try {
             const firebaseConfig = {
                 apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
@@ -132,22 +152,32 @@ function mainApp() {
 
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
+                    // El usuario está autenticado, ahora cargamos sus datos
                     userId = user.uid;
                     await loadUserData();
                     updateProfileDisplay();
                     listenToFriendRequests();
                     listenToFriends();
+                    
+                    // Solo cuando todo ha cargado, desbloqueamos la app
+                    isAuthReady = true;
+                    setAppLoading(false); 
                 }
-                isAuthReady = true;
             });
-            await signInAnonymously(auth);
+
+            // Si no hay un usuario actual, iniciamos sesión de forma anónima.
+            // Esto disparará el onAuthStateChanged de arriba.
+            if (!auth.currentUser) {
+                await signInAnonymously(auth);
+            }
+
         } catch (error) {
             console.error("Firebase initialization failed:", error);
+            // Aquí podríamos mostrar un mensaje de error al usuario
         }
     }
     
-    initializeAppUI();
-    initializeFirebase();
+    initializeApp(); // <-- LA APP EMPIEZA A CARGAR AQUÍ
 
     async function loadUserData() {
         if (!isAuthReady || !userId) return;
@@ -293,9 +323,8 @@ function mainApp() {
     function updateProfileDisplay() {
         elements.profileDisplay.innerHTML = '';
         if (userProfile.nickname) {
-            // CORRECCIÓN PARA EL BUG DEL AVATAR GIGANTE
             const avatarContainer = document.createElement('div');
-            avatarContainer.className = 'w-6 h-6'; // Damos el tamaño al contenedor
+            avatarContainer.className = 'w-6 h-6';
             const avatar = getAvatarSvg(userProfile.avatar);
             if (avatar) {
                 avatarContainer.appendChild(avatar);
@@ -626,6 +655,7 @@ function mainApp() {
     }
     
     async function sendFriendRequest(button) {
+        if (!isAuthReady) return;
         const friendId = button.dataset.id;
         if (!userId || !friendId) return;
         const requestsRef = collection(db, "friendRequests");
@@ -728,6 +758,10 @@ function mainApp() {
     }
     
     async function handleFriendRequest(requestId, action) {
+        if (!isAuthReady) {
+            console.error("Intento de acción sin que la autenticación esté lista.");
+            return;
+        }
         const handleRequest = httpsCallable(functions, 'handleFriendRequest');
         try {
             const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
@@ -750,6 +784,10 @@ function mainApp() {
     }
 
     async function deleteUserByNickname() {
+        if (!isAuthReady) {
+            elements.deleteFeedback.textContent = "La app no está lista. Espera.";
+            return;
+        }
         const nicknameToDelete = elements.deleteNicknameInput.value.trim();
         if (!nicknameToDelete) {
             elements.deleteFeedback.textContent = "Introduce un nick.";
