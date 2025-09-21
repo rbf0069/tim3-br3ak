@@ -102,6 +102,20 @@
             <footer class="text-center text-xs text-gray-500 py-2 flex-shrink-0 safe-area-padding-bottom">Banner de Publicidad</footer>
         </div>
         <div id="settings-screen" class="hidden app-screen w-full h-full flex flex-col p-4 bg-gray-900">
+            <div class="w-full max-w-md border-4 border-gray-700 rounded-3xl bg-gray-900/50 p-6 space-y-6">
+    
+    <div class="pt-4 border-t-2 border-gray-700">
+        <h3 class="text-center text-red-500 font-bold mb-2">DEV TOOLS</h3>
+        <div class="flex items-center space-x-2">
+            <input type="text" id="delete-nickname-input" class="flex-grow p-2 bg-gray-800 border-2 border-gray-600 rounded-lg text-center focus:border-red-500 focus:outline-none" placeholder="Nick a borrar...">
+            <button id="delete-nickname-button" class="action-button bg-red-800 hover:bg-red-700 text-white font-bold p-2 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        </div>
+        <p id="delete-feedback" class="text-center text-sm text-gray-400 h-4 mt-2"></p>
+    </div>
+
+</div>
             <header class="w-full max-w-md mx-auto mb-6">
                 <div class="w-full"><button id="back-to-main-from-settings-button" class="text-3xl font-bold text-gray-400 hover:text-white">←</button></div>
                 <h2 class="text-3xl font-bold text-white text-center mt-2">AJUSTES</h2>
@@ -248,3 +262,4 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
