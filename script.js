@@ -92,13 +92,13 @@ function mainApp() {
     let settings = { sound: true, vibration: true, showScore: true };
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
-    let hasNewRequests = false; 
+    let hasNewRequests = false;
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
     function setAppLoading(isLoading) {
         const mainButtons = [
-            elements.playButton, elements.friendsButton, elements.howToPlayButton, 
+            elements.playButton, elements.friendsButton, elements.howToPlayButton,
             elements.rankingButton, elements.settingsButton, elements.aboutButton
         ];
         mainButtons.forEach(button => {
@@ -131,56 +131,8 @@ function mainApp() {
         }
     }
 
-    async function initializeApp() {
-        setAppLoading(true); // Bloqueamos la app al inicio
-        initializeAppUI();
-
-        try {
-            const firebaseConfig = {
-                apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
-                authDomain: "tim3-br3ak.firebaseapp.com",
-                projectId: "tim3-br3ak",
-                storageBucket: "tim3-br3ak.appspot.com",
-                messagingSenderId: "1029726018714",
-                appId: "1:1029726018714:web:16ed60f60bdf57ebe2d323",
-                measurementId: "G-VGSD8GC449"
-            };
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            functions = getFunctions(app, 'us-central1');
-
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    // El usuario está autenticado, ahora cargamos sus datos
-                    userId = user.uid;
-                    await loadUserData();
-                    updateProfileDisplay();
-                    listenToFriendRequests();
-                    listenToFriends();
-                    
-                    // Solo cuando todo ha cargado, desbloqueamos la app
-                    isAuthReady = true;
-                    setAppLoading(false); 
-                }
-            });
-
-            // Si no hay un usuario actual, iniciamos sesión de forma anónima.
-            // Esto disparará el onAuthStateChanged de arriba.
-            if (!auth.currentUser) {
-                await signInAnonymously(auth);
-            }
-
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-            // Aquí podríamos mostrar un mensaje de error al usuario
-        }
-    }
-    
-    initializeApp(); // <-- LA APP EMPIEZA A CARGAR AQUÍ
-
     async function loadUserData() {
-        if (!isAuthReady || !userId) return;
+        if (!userId) return;
         const userDocRef = doc(db, "users", userId);
         try {
             const docSnap = await getDoc(userDocRef);
@@ -200,7 +152,7 @@ function mainApp() {
     }
 
     async function saveProfile() {
-        if (!isAuthReady || !userId) return;
+        if (!isAuthReady) return;
         const newNickname = elements.nicknameInput.value.trim();
         const feedbackEl = elements.nicknameFeedback;
         if (newNickname.length < 2) {
@@ -249,7 +201,7 @@ function mainApp() {
     }
 
     async function saveBestScore() {
-        if (!isAuthReady || !userId) return;
+        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         const today = new Date().toLocaleDateString();
         try {
@@ -260,7 +212,8 @@ function mainApp() {
     }
 
     async function saveRanking(newScore) {
-        if (!isAuthReady || !userId || newScore <= 0) return;
+        if (!isAuthReady) return;
+        if (newScore <= 0) return;
         const userDocRef = doc(db, "users", userId);
         try {
             const docSnap = await getDoc(userDocRef);
@@ -277,7 +230,7 @@ function mainApp() {
     }
 
     async function resetAllData() {
-        if (!isAuthReady || !userId) return;
+        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         try {
             await setDoc(userDocRef, { bestScore: { score: 0, date: new Date().toLocaleDateString() }, ranking: [] }, { merge: true });
@@ -289,7 +242,7 @@ function mainApp() {
     }
 
     async function saveSettings() {
-        if (!isAuthReady || !userId) return;
+        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         try {
             await setDoc(userDocRef, { settings: settings }, { merge: true });
@@ -374,6 +327,7 @@ function mainApp() {
     }
 
     function startGameFlow() {
+        if (!isAuthReady) return;
         resetGame();
         showScreen(elements.gameScreen);
     }
@@ -504,10 +458,7 @@ function mainApp() {
     }
 
     async function displayRanking() {
-        if (!isAuthReady || !userId) {
-            elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Conectando...</div>`;
-            return;
-        };
+        if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         elements.rankingList.innerHTML = '';
         try {
@@ -613,6 +564,7 @@ function mainApp() {
     }
 
     async function searchPlayers(searchTerm) {
+        if (!isAuthReady) return;
         const container = elements.searchResultsContainer;
         container.innerHTML = "";
         if (searchTerm.length < 2) return;
@@ -750,7 +702,7 @@ function mainApp() {
             rejectButton.dataset.requestId = request.requestId;
             rejectButton.onclick = () => handleFriendRequest(request.requestId, 'rejected');
             buttonsContainer.appendChild(acceptButton);
-            buttonsContainer.appendChild(rejectButton);
+buttonsContainer.appendChild(rejectButton);
             requestCard.appendChild(profileInfo);
             requestCard.appendChild(buttonsContainer);
             container.appendChild(requestCard);
@@ -819,6 +771,7 @@ function mainApp() {
         showScreen(elements.friendsScreen);
     });
     elements.editProfileButton.addEventListener('click', () => { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) });
+    elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
     elements.backToMainButtons.forEach(button => button.addEventListener('click', () => showScreen(elements.mainScreen)));
     elements.backToSettingsFromProfileButton.addEventListener('click', () => showScreen(elements.settingsScreen));
     elements.actionButton.addEventListener('click', handleActionClick);
@@ -837,7 +790,6 @@ function mainApp() {
     elements.friendsTabList.addEventListener('click', () => switchFriendsTab('list'));
     elements.friendsTabRequests.addEventListener('click', () => switchFriendsTab('requests'));
     elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
-    elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
     AVATAR_IDS.forEach(id => {
         const avatarContainer = document.createElement('div');
         avatarContainer.dataset.avatarId = id;
@@ -851,4 +803,5 @@ function mainApp() {
         });
     });
 }
+
 checkPasswordAndInit();
