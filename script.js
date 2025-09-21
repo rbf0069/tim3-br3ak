@@ -75,6 +75,9 @@ function mainApp() {
         currentScoreDisplay: document.getElementById('current-score-display'), currentScoreContainer: document.getElementById('current-score-container'),
         friendsNotificationBadge: document.getElementById('friends-notification-badge'),
         requestsNotificationBadge: document.getElementById('requests-notification-badge'),
+        deleteNicknameInput: document.getElementById('delete-nickname-input'),
+        deleteNicknameButton: document.getElementById('delete-nickname-button'),
+        deleteFeedback: document.getElementById('delete-feedback'),
     };
 
     // --- 2. VARIABLES DE ESTADO ---
@@ -125,9 +128,7 @@ function mainApp() {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            // ----------- LA CORRECCIÓN CLAVE ESTÁ AQUÍ -----------
-            functions = getFunctions(app, 'us-central1'); 
-            // ----------------------------------------------------
+            functions = getFunctions(app, 'us-central1');
 
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
@@ -541,7 +542,7 @@ function mainApp() {
             nickEl.textContent = friend.nickname;
             const scoreEl = document.createElement('p');
             scoreEl.className = 'font-chrono text-sm text-yellow-400';
-            scoreEl.textContent = `Best: 0`;
+            scoreEl.textContent = `Best: 0`; // Aún no tenemos esta info, lo haremos más adelante
             textInfo.appendChild(nickEl);
             textInfo.appendChild(scoreEl);
             profileInfo.appendChild(avatarContainer);
@@ -646,15 +647,14 @@ function mainApp() {
     function listenToFriends() {
         if (!userId) return;
         const friendsColRef = collection(db, `users/${userId}/friends`);
-        onSnapshot(friendsColRef, async (snapshot) => {
-            const friendPromises = snapshot.docs.map(friendDoc => {
-                const friendId = friendDoc.id;
-                const nicknameDocRef = doc(db, 'nicknames', friendId);
-                return getDoc(nicknameDocRef);
-            });
-            const friendNickDocs = await Promise.all(friendPromises);
-            const friendsList = friendNickDocs.filter(doc => doc.exists()).map(doc => ({ userId: doc.id, ...doc.data() }));
+        onSnapshot(friendsColRef, (snapshot) => {
+            const friendsList = snapshot.docs.map(doc => ({ 
+                userId: doc.id, 
+                ...doc.data() 
+            }));
             displayFriends(friendsList);
+        }, (error) => {
+            console.error("Error en el listener de amigos:", error);
         });
     }
 
@@ -677,6 +677,8 @@ function mainApp() {
                 return null;
             }).filter(Boolean);
             displayFriendRequests(requestsList);
+        }, (error) => {
+            console.error("Error en el listener de solicitudes:", error);
         });
     }
 
@@ -706,10 +708,12 @@ function mainApp() {
             const acceptButton = document.createElement('button');
             acceptButton.className = 'bg-green-600 hover:bg-green-700 text-white font-bold p-2 rounded-full action-button';
             acceptButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            acceptButton.dataset.requestId = request.requestId;
             acceptButton.onclick = () => handleFriendRequest(request.requestId, 'accepted');
             const rejectButton = document.createElement('button');
             rejectButton.className = 'bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-full action-button';
             rejectButton.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            rejectButton.dataset.requestId = request.requestId;
             rejectButton.onclick = () => handleFriendRequest(request.requestId, 'rejected');
             buttonsContainer.appendChild(acceptButton);
             buttonsContainer.appendChild(rejectButton);
@@ -722,15 +726,43 @@ function mainApp() {
     async function handleFriendRequest(requestId, action) {
         const handleRequest = httpsCallable(functions, 'handleFriendRequest');
         try {
-            const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
+            const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = true);
-            console.log(`Llamando a la Cloud Function con: requestId=${requestId}, action=${action}`);
-            const result = await handleRequest({ requestId, action });
-            console.log("Respuesta de la Cloud Function:", result.data);
+            
+            await handleRequest({ 
+                requestId, 
+                action, 
+                accepterProfile: {
+                    nickname: userProfile.nickname,
+                    avatar: userProfile.avatar
+                }
+            });
+            
         } catch (error) {
             console.error("Error al llamar a la Cloud Function:", error);
-            const buttons = document.querySelectorAll(`[onclick*="${requestId}"]`);
+            const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = false);
+        }
+    }
+
+    async function deleteUserByNickname() {
+        const nicknameToDelete = elements.deleteNicknameInput.value.trim();
+        if (!nicknameToDelete) {
+            elements.deleteFeedback.textContent = "Introduce un nick.";
+            return;
+        }
+        
+        elements.deleteFeedback.textContent = "Borrando...";
+        const deleteFunction = httpsCallable(functions, 'deleteUserByNickname');
+        try {
+            const result = await deleteFunction({ nickname: nicknameToDelete });
+            elements.deleteFeedback.textContent = result.data.message;
+        } catch (error) {
+            console.error("Error al borrar usuario:", error);
+            elements.deleteFeedback.textContent = error.message;
+        } finally {
+            elements.deleteNicknameInput.value = "";
+            setTimeout(() => { elements.deleteFeedback.textContent = ""; }, 3000);
         }
     }
 
@@ -763,6 +795,7 @@ function mainApp() {
     elements.friendsTabList.addEventListener('click', () => switchFriendsTab('list'));
     elements.friendsTabRequests.addEventListener('click', () => switchFriendsTab('requests'));
     elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
+    elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
     AVATAR_IDS.forEach(id => {
         const avatarContainer = document.createElement('div');
         avatarContainer.dataset.avatarId = id;
