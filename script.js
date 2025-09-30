@@ -414,7 +414,6 @@ function mainApp() {
                 currentGameDuration = 10000;
         }
 
-        vibrate(50);
         resetGame();
 
         if (currentGameMode === 'hidden') {
@@ -549,7 +548,6 @@ function mainApp() {
             }
         } else if (gameState === 'running') {
             playSound('stop-button');
-            vibrate(50);
             clearInterval(intervalId);
             timeWhenStopped = elapsedTime;
             gameState = 'stopped';
@@ -564,7 +562,6 @@ function mainApp() {
             elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
         } else if (gameState === 'stopped') {
             playSound('stop-button');
-            vibrate(50);
             gameState = 'running';
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
@@ -1013,4 +1010,5 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
