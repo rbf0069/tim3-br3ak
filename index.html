@@ -214,15 +214,16 @@
                 </div>
             </div>
         </div>
-        <div id="end-game-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
-            <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
-                <h2 class="text-2xl font-bold mb-4">¡Partida Terminada!</h2>
-                <p class="text-gray-400 mb-6 text-xl">Tu puntuación: <span id="final-score" class="font-bold text-white">0</span></p>
+      <div id="game-mode-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
+            <div class="bg-gray-800 rounded-2xl p-6 text-center max-w-sm w-full shadow-lg">
+                <h2 class="text-3xl font-bold mb-6">Elige un Modo</h2>
                 <div class="flex flex-col space-y-4">
-                    <button id="play-again-button" class="action-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg">Jugar de Nuevo</button>
-                    <button id="main-menu-button" class="action-button bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg">Menú Principal</button>
+                    <button id="mode-classic-button" class="action-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl py-4 rounded-xl">Modo Clásico</button>
+                    <button id="mode-hidden-button" class="action-button bg-sky-600 hover:bg-sky-700 text-white font-bold text-xl py-4 rounded-xl">Modo Oculto</button>
                 </div>
+                <button id="close-mode-popup-button" class="mt-6 text-gray-400 hover:text-white font-bold">Cancelar</button>
             </div>
+        </div>
         </div>
         <div id="reset-data-popup" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-10">
             <div class="bg-gray-800 rounded-lg p-8 text-center max-w-sm w-full">
@@ -258,3 +259,4 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
