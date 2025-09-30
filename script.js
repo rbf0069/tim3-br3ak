@@ -414,7 +414,6 @@ function mainApp() {
                 currentGameDuration = 10000;
         }
 
-        playSound('start-game');
         vibrate(50);
         resetGame();
 
@@ -535,6 +534,7 @@ function mainApp() {
 
     function handleActionClick() {
         if (gameState === 'ready') {
+            playSound('start-game'); //
             gameState = 'running';
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
@@ -1013,3 +1013,4 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
