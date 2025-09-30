@@ -155,12 +155,14 @@ function mainApp() {
             elements.rankingButton, elements.settingsButton, elements.aboutButton
         ];
         mainButtons.forEach(button => {
-            if (isLoading) {
-                button.disabled = true;
-                button.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                button.disabled = false;
-                button.classList.remove('opacity-50', 'cursor-not-allowed');
+            if (button) {
+                if (isLoading) {
+                    button.disabled = true;
+                    button.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    button.disabled = false;
+                    button.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             }
         });
     }
@@ -175,12 +177,14 @@ function mainApp() {
     }
 
     function updateNotificationUI() {
-        if (hasNewRequests) {
-            elements.friendsNotificationBadge.classList.remove('hidden');
-            elements.requestsNotificationBadge.classList.remove('hidden');
-        } else {
-            elements.friendsNotificationBadge.classList.add('hidden');
-            elements.requestsNotificationBadge.classList.add('hidden');
+        if (elements.friendsNotificationBadge) {
+            if (hasNewRequests) {
+                elements.friendsNotificationBadge.classList.remove('hidden');
+                elements.requestsNotificationBadge.classList.remove('hidden');
+            } else {
+                elements.friendsNotificationBadge.classList.add('hidden');
+                elements.requestsNotificationBadge.classList.add('hidden');
+            }
         }
     }
 
@@ -203,7 +207,9 @@ function mainApp() {
         } catch (error) {
             console.error("Error loading user data:", error);
         }
-        elements.bestScoreDisplay.textContent = bestScoreToday;
+        if (elements.bestScoreDisplay) {
+            elements.bestScoreDisplay.textContent = bestScoreToday;
+        }
         updateSettingsUI();
     }
 
@@ -312,7 +318,7 @@ function mainApp() {
 
     function showScreen(screenToShow) {
         const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.profileScreen, elements.friendsScreen];
-        screens.forEach(screen => screen.classList.add('hidden'));
+        screens.forEach(screen => { if (screen) screen.classList.add('hidden') });
         if(screenToShow) screenToShow.classList.remove('hidden');
     }
 
@@ -320,7 +326,9 @@ function mainApp() {
         showScreen(elements.mainScreen);
         const now = new Date();
         const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        elements.dateDisplay.textContent = `${days[now.getDay()]}, ${now.getDate()}`;
+        if (elements.dateDisplay) {
+            elements.dateDisplay.textContent = `${days[now.getDay()]}, ${now.getDate()}`;
+        }
     }
 
     function getAvatarSvg(avatarId) {
@@ -333,6 +341,7 @@ function mainApp() {
     }
 
     function updateProfileDisplay() {
+        if (!elements.profileDisplay) return;
         elements.profileDisplay.innerHTML = '';
         if (userProfile.nickname) {
             const avatarContainer = document.createElement('div');
@@ -352,6 +361,7 @@ function mainApp() {
     }
 
     function updateProfileUI() {
+        if (!elements.currentAvatarDisplay || !elements.avatarGallery) return;
         elements.currentAvatarDisplay.innerHTML = '';
         const avatar = getAvatarSvg(selectedAvatar);
         if (avatar) elements.currentAvatarDisplay.appendChild(avatar);
@@ -379,13 +389,12 @@ function mainApp() {
         elements.actionButton.textContent = '¡GO!';
         elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
         
-        // Lógica de visualización basada en modo y ajustes
         if (settings.showScore) {
             elements.currentScoreContainer.classList.remove('hidden');
         } else {
             elements.currentScoreContainer.classList.add('hidden');
         }
-        elements.chronometerDisplay.classList.remove('opacity-0'); // Siempre visible al resetear
+        elements.chronometerDisplay.classList.remove('opacity-0');
     }
 
     function startGameFlow(mode) {
@@ -402,6 +411,7 @@ function mainApp() {
     }
 
     function setupAttemptsIndicator() {
+        if (!elements.attemptsIndicator) return;
         elements.attemptsIndicator.innerHTML = '';
         for (let i = 0; i < 10; i++) {
             const dot = document.createElement('div');
@@ -435,13 +445,14 @@ function mainApp() {
     }
 
     function updateChronometerDisplay() {
+        if (!elements.chronometerDisplay) return;
         const seconds = Math.floor(elapsedTime / 1000);
         const milliseconds = Math.floor((elapsedTime % 1000) / 10);
         elements.chronometerDisplay.innerHTML = `${String(seconds).padStart(2, '0')}<span class="text-5xl sm:text-6xl text-gray-400">.${String(milliseconds).padStart(2, '0')}</span>`;
     }
 
     function showScoreFeedback(text) {
-        if (!text) return;
+        if (!text || !elements.scoreFeedback) return;
         vibrate(100);
         elements.scoreFeedback.textContent = text;
         elements.scoreFeedback.classList.add('show');
@@ -499,7 +510,7 @@ function mainApp() {
         
         if (currentGameMode === 'hidden') {
             elements.chronometerDisplay.classList.remove('opacity-0');
-            updateChronometerDisplay(); // Mostramos el tiempo final
+            updateChronometerDisplay();
         }
         
         elements.endGamePopup.classList.remove('hidden');
@@ -568,6 +579,7 @@ function mainApp() {
     }
 
     function updateSettingsUI() {
+        if (!elements.soundCheckbox) return;
         if (settings.sound) {
             elements.soundCheckbox.classList.add('bg-emerald-500');
             elements.soundCheckmark.classList.remove('hidden');
@@ -593,6 +605,7 @@ function mainApp() {
     
     function displayFriends(friendsList) {
         const container = elements.friendsListContainer;
+        if (!container) return;
         container.innerHTML = "";
         if (!friendsList || friendsList.length === 0) {
             container.innerHTML = `<div class="text-center text-gray-400 p-4">Añade amigos para verlos aquí.</div>`;
@@ -629,6 +642,7 @@ function mainApp() {
 
     function switchFriendsTab(activeTab) {
         const { friendsTabList, friendsTabRequests, friendsListContainer, requestsListContainer } = elements;
+        if (!friendsTabList) return;
         if (activeTab === 'list') {
             friendsTabList.classList.remove("text-gray-400", "border-transparent");
             friendsTabList.classList.add("text-white", "border-purple-500");
@@ -652,6 +666,7 @@ function mainApp() {
 
     async function searchPlayers(searchTerm) {
         const container = elements.searchResultsContainer;
+        if (!container) return;
         container.innerHTML = "";
         if (searchTerm.length < 2) return;
         const nicknamesColRef = collection(db, `nicknames`);
@@ -755,6 +770,7 @@ function mainApp() {
 
     function displayFriendRequests(requestsList) {
         const container = elements.requestsListContainer;
+        if (!container) return;
         container.innerHTML = "";
         if (!requestsList || requestsList.length === 0) {
             container.innerHTML = `<div class="text-center text-gray-400 p-4">No tienes solicitudes pendientes.</div>`;
@@ -839,14 +855,13 @@ function mainApp() {
         }
     }
 
- // --- 4. LÓGICA DE ARRANQUE Y EVENT LISTENERS ---
-    
-    // La función startApp ahora está definida ANTES de ser llamada.
+    // --- 4. LÓGICA DE ARRANQUE ---
     async function startApp() {
-        setAppLoading(true);
-        initializeAppUI();
-        preloadAudio(); // Precargamos los sonidos al inicio
         try {
+            setAppLoading(true);
+            initializeAppUI();
+            preloadAudio();
+            
             const firebaseConfig = {
                 apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
                 authDomain: "tim3-br3ak.firebaseapp.com",
@@ -875,78 +890,90 @@ function mainApp() {
                 }
             });
         } catch (error) {
-            console.error("Firebase initialization failed:", error);
+            console.error("Error fatal durante la inicialización:", error);
+            setAppLoading(false);
+            // Opcional: mostrar un mensaje de error al usuario en la UI
         }
     }
 
     // --- 5. INICIALIZACIÓN Y EVENT LISTENERS ---
-    elements.playButton.addEventListener('click', () => {
-        playSound('ui-click');
-        elements.gameModePopup.classList.remove('hidden');
-    });
-    
-    elements.modeClassicButton.addEventListener('click', () => {
-        elements.gameModePopup.classList.add('hidden');
-        startGameFlow('classic');
-    });
-
-    elements.modeHiddenButton.addEventListener('click', () => {
-        elements.gameModePopup.classList.add('hidden');
-        startGameFlow('hidden');
-    });
-
-    elements.closeModePopupButton.addEventListener('click', () => {
-        playSound('ui-click');
-        elements.gameModePopup.classList.add('hidden');
-    });
-    
-    // Menú principal con sonido
-    elements.howToPlayButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.howToPlayScreen); });
-    elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
-    elements.settingsButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
-    elements.aboutButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.aboutScreen); });
-    elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
-    elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
-    
-    elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
-    
-    // Botones de "volver" con sonido
-    elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
-    elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
-    
-    elements.actionButton.addEventListener('click', handleActionClick);
-    elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
-    elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { /* No reiniciamos el hardStopTimer */ } });
-    elements.confirmExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-    elements.playAgainButton.addEventListener('click', () => { startGameFlow(currentGameMode); elements.endGamePopup.classList.add('hidden'); });
-    elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-    elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
-    elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
-    elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
-    elements.resetDataButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.remove('hidden'); });
-    elements.cancelResetButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.add('hidden'); });
-    elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayRanking(); });
-    elements.saveProfileButton.addEventListener('click', saveProfile);
-    elements.friendsTabList.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('list'); });
-    elements.friendsTabRequests.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('requests'); });
-    elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
-    AVATAR_IDS.forEach(id => {
-        const avatarContainer = document.createElement('div');
-        avatarContainer.dataset.avatarId = id;
-        avatarContainer.className = 'avatar-container p-2 rounded-lg cursor-pointer hover:bg-gray-700';
-        const svg = getAvatarSvg(id);
-        if (svg) avatarContainer.appendChild(svg);
-        elements.avatarGallery.appendChild(avatarContainer);
-        avatarContainer.addEventListener('click', () => {
+    try {
+        elements.playButton.addEventListener('click', () => {
             playSound('ui-click');
-            selectedAvatar = id;
-            updateProfileUI();
+            elements.gameModePopup.classList.remove('hidden');
         });
-    });
     
-    // --- INICIO DE LA APP ---
-    startApp();
+        elements.modeClassicButton.addEventListener('click', () => {
+            elements.gameModePopup.classList.add('hidden');
+            startGameFlow('classic');
+        });
+
+        elements.modeHiddenButton.addEventListener('click', () => {
+            elements.gameModePopup.classList.add('hidden');
+            startGameFlow('hidden');
+        });
+
+        elements.closeModePopupButton.addEventListener('click', () => {
+            playSound('ui-click');
+            elements.gameModePopup.classList.add('hidden');
+        });
+        
+        elements.howToPlayButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.howToPlayScreen); });
+        elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
+        elements.settingsButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
+        elements.aboutButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.aboutScreen); });
+        elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
+        elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
+        
+        elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
+        
+        elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
+        elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
+        
+        elements.actionButton.addEventListener('click', handleActionClick);
+        elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
+        elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { /* No reiniciamos el hardStopTimer */ } });
+        elements.confirmExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
+        
+        // Lógica corregida para el botón "Jugar de Nuevo"
+        elements.playAgainButton.addEventListener('click', () => {
+            elements.endGamePopup.classList.add('hidden');
+            startGameFlow(currentGameMode); 
+        });
+
+        elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
+        elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
+        elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
+        elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
+        elements.resetDataButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.remove('hidden'); });
+        elements.cancelResetButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.add('hidden'); });
+        elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayRanking(); });
+        elements.saveProfileButton.addEventListener('click', saveProfile);
+        elements.friendsTabList.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('list'); });
+        elements.friendsTabRequests.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('requests'); });
+        elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
+        
+        if (elements.avatarGallery) {
+            AVATAR_IDS.forEach(id => {
+                const avatarContainer = document.createElement('div');
+                avatarContainer.dataset.avatarId = id;
+                avatarContainer.className = 'avatar-container p-2 rounded-lg cursor-pointer hover:bg-gray-700';
+                const svg = getAvatarSvg(id);
+                if (svg) avatarContainer.appendChild(svg);
+                elements.avatarGallery.appendChild(avatarContainer);
+                avatarContainer.addEventListener('click', () => {
+                    playSound('ui-click');
+                    selectedAvatar = id;
+                    updateProfileUI();
+                });
+            });
+        }
+
+        startApp();
+    } catch (error) {
+        console.error("Error al añadir event listeners:", error);
+    }
 }
 
-// Punto de entrada inicial: Este es el único código que se ejecuta al cargar la página.
+// Punto de entrada inicial
 checkPasswordAndInit();
