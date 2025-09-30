@@ -88,7 +88,11 @@ body {
 .avatar-selected {
     outline: 2px solid #34D399; /* Verde esmeralda */
     background-color: #374151; /* Gris más oscuro */
+}
 
+/* --- ESTILOS PARA NOTIFICACIONES --- */
+.notification-badge {
+    box-shadow: 0 0 0 2px #111827; /* Crea un borde del color del fondo para que destaque */
 }
 
 /* --- ESTILOS PARA ICONOS --- */
