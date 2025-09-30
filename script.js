@@ -513,7 +513,10 @@ function mainApp() {
             updateChronometerDisplay();
         }
         
-        elements.endGamePopup.classList.remove('hidden');
+        // AÑADIMOS UN RETRASO PARA MOSTRAR EL POPUP
+        setTimeout(() => {
+            elements.endGamePopup.classList.remove('hidden');
+        }, 300);
     }
 
     function handleActionClick() {
@@ -892,66 +895,64 @@ function mainApp() {
         } catch (error) {
             console.error("Error fatal durante la inicialización:", error);
             setAppLoading(false);
-            // Opcional: mostrar un mensaje de error al usuario en la UI
         }
     }
 
     // --- 5. INICIALIZACIÓN Y EVENT LISTENERS ---
     try {
-        elements.playButton.addEventListener('click', () => {
+        if (elements.playButton) elements.playButton.addEventListener('click', () => {
             playSound('ui-click');
             elements.gameModePopup.classList.remove('hidden');
         });
     
-        elements.modeClassicButton.addEventListener('click', () => {
+        if (elements.modeClassicButton) elements.modeClassicButton.addEventListener('click', () => {
             elements.gameModePopup.classList.add('hidden');
             startGameFlow('classic');
         });
 
-        elements.modeHiddenButton.addEventListener('click', () => {
+        if (elements.modeHiddenButton) elements.modeHiddenButton.addEventListener('click', () => {
             elements.gameModePopup.classList.add('hidden');
             startGameFlow('hidden');
         });
 
-        elements.closeModePopupButton.addEventListener('click', () => {
+        if (elements.closeModePopupButton) elements.closeModePopupButton.addEventListener('click', () => {
             playSound('ui-click');
             elements.gameModePopup.classList.add('hidden');
         });
         
-        elements.howToPlayButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.howToPlayScreen); });
-        elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
-        elements.settingsButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
-        elements.aboutButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.aboutScreen); });
-        elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
-        elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
+        if (elements.howToPlayButton) elements.howToPlayButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.howToPlayScreen); });
+        if (elements.rankingButton) elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
+        if (elements.settingsButton) elements.settingsButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
+        if (elements.aboutButton) elements.aboutButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.aboutScreen); });
+        if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
+        if (elements.editProfileButton) elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
         
-        elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
+        if (elements.deleteNicknameButton) elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
         
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
-        elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
+        if (elements.backToSettingsFromProfileButton) elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
         
-        elements.actionButton.addEventListener('click', handleActionClick);
-        elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
-        elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { /* No reiniciamos el hardStopTimer */ } });
-        elements.confirmExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
+        if (elements.actionButton) elements.actionButton.addEventListener('click', handleActionClick);
+        if (elements.exitButton) elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
+        if (elements.cancelExitButton) elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { /* No reiniciamos el hardStopTimer */ } });
+        if (elements.confirmExitButton) elements.confirmExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
         
-        // Lógica corregida para el botón "Jugar de Nuevo"
-        elements.playAgainButton.addEventListener('click', () => {
+        if (elements.playAgainButton) elements.playAgainButton.addEventListener('click', () => {
             elements.endGamePopup.classList.add('hidden');
             startGameFlow(currentGameMode); 
         });
 
-        elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-        elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
-        elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
-        elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
-        elements.resetDataButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.remove('hidden'); });
-        elements.cancelResetButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.add('hidden'); });
-        elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayRanking(); });
-        elements.saveProfileButton.addEventListener('click', saveProfile);
-        elements.friendsTabList.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('list'); });
-        elements.friendsTabRequests.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('requests'); });
-        elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
+        if (elements.mainMenuButton) elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
+        if (elements.soundCheckbox) elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
+        if (elements.vibrationCheckbox) elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
+        if (elements.showScoreCheckbox) elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
+        if (elements.resetDataButton) elements.resetDataButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.remove('hidden'); });
+        if (elements.cancelResetButton) elements.cancelResetButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.add('hidden'); });
+        if (elements.confirmResetButton) elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayRanking(); });
+        if (elements.saveProfileButton) elements.saveProfileButton.addEventListener('click', saveProfile);
+        if (elements.friendsTabList) elements.friendsTabList.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('list'); });
+        if (elements.friendsTabRequests) elements.friendsTabRequests.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('requests'); });
+        if (elements.addFriendInput) elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
         
         if (elements.avatarGallery) {
             AVATAR_IDS.forEach(id => {
