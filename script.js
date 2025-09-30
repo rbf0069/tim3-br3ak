@@ -490,6 +490,10 @@ function mainApp() {
             gameState = 'running';
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
+            
+            // INICIA EL TEMPORIZADOR DE 15 SEGUNDOS AQUÍ Y SOLO AQUÍ
+            hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
+
             elements.actionButton.textContent = 'STOP';
             elements.actionButton.className = "action-button w-1/2 h-20 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
             const dots = elements.attemptsIndicator.children;
@@ -511,11 +515,11 @@ function mainApp() {
             }
             elements.actionButton.textContent = 'PLAY';
             elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
+            // YA NO SE INICIA EL TEMPORIZADOR AQUÍ
         } else if (gameState === 'stopped') {
             playSound('stop-button');
             vibrate(50);
-            clearTimeout(hardStopTimer);
+            // YA NO SE BORRA EL TEMPORIZADOR AQUÍ
             gameState = 'running';
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
@@ -876,8 +880,8 @@ function mainApp() {
     elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
     
     elements.actionButton.addEventListener('click', handleActionClick);
-    elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running') clearInterval(intervalId); if (gameState === 'stopped') clearTimeout(hardStopTimer); elements.exitPopup.classList.remove('hidden'); });
-    elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT); } });
+    elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
+    elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { /* No reiniciamos el hardStopTimer */ } });
     elements.confirmExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
     elements.playAgainButton.addEventListener('click', () => { elements.endGamePopup.classList.add('hidden'); startGameFlow(); });
     elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
