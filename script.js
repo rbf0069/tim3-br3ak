@@ -93,6 +93,10 @@ function mainApp() {
         finalScoreDisplay: document.getElementById('final-score'),
         playAgainButton: document.getElementById('play-again-button'),
         mainMenuButton: document.getElementById('main-menu-button'),
+        gameModePopup: document.getElementById('game-mode-popup'),
+        modeClassicButton: document.getElementById('mode-classic-button'),
+        modeHiddenButton: document.getElementById('mode-hidden-button'),
+        closeModePopupButton: document.getElementById('close-mode-popup-button'),
         resetDataPopup: document.getElementById('reset-data-popup'),
         confirmResetButton: document.getElementById('confirm-reset-button'),
         cancelResetButton: document.getElementById('cancel-reset-button'),
@@ -119,6 +123,7 @@ function mainApp() {
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
     let hasNewRequests = false; 
     const audio = {};
+    let currentGameMode = 'classic';
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
@@ -373,17 +378,26 @@ function mainApp() {
         elements.currentScoreDisplay.textContent = 0;
         elements.actionButton.textContent = '¡GO!';
         elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
+        
+        // Lógica de visualización basada en modo y ajustes
         if (settings.showScore) {
             elements.currentScoreContainer.classList.remove('hidden');
         } else {
             elements.currentScoreContainer.classList.add('hidden');
         }
+        elements.chronometerDisplay.classList.remove('opacity-0'); // Siempre visible al resetear
     }
 
-    function startGameFlow() {
+    function startGameFlow(mode) {
+        currentGameMode = mode;
         playSound('start-game');
         vibrate(50);
         resetGame();
+        
+        if (currentGameMode === 'hidden') {
+            elements.chronometerDisplay.classList.add('opacity-0');
+        }
+        
         showScreen(elements.gameScreen);
     }
 
@@ -482,6 +496,12 @@ function mainApp() {
             await saveBestScore();
         }
         await saveRanking(score);
+        
+        if (currentGameMode === 'hidden') {
+            elements.chronometerDisplay.classList.remove('opacity-0');
+            updateChronometerDisplay(); // Mostramos el tiempo final
+        }
+        
         elements.endGamePopup.classList.remove('hidden');
     }
 
@@ -491,7 +511,6 @@ function mainApp() {
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
             
-            // INICIA EL TEMPORIZADOR DE 15 SEGUNDOS AQUÍ Y SOLO AQUÍ
             hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
 
             elements.actionButton.textContent = 'STOP';
@@ -515,11 +534,9 @@ function mainApp() {
             }
             elements.actionButton.textContent = 'PLAY';
             elements.actionButton.className = "action-button w-1/2 h-20 bg-sky-500 hover:bg-sky-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-            // YA NO SE INICIA EL TEMPORIZADOR AQUÍ
         } else if (gameState === 'stopped') {
             playSound('stop-button');
             vibrate(50);
-            // YA NO SE BORRA EL TEMPORIZADOR AQUÍ
             gameState = 'running';
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
@@ -863,7 +880,25 @@ function mainApp() {
     }
 
     // --- 5. INICIALIZACIÓN Y EVENT LISTENERS ---
-    elements.playButton.addEventListener('click', startGameFlow);
+    elements.playButton.addEventListener('click', () => {
+        playSound('ui-click');
+        elements.gameModePopup.classList.remove('hidden');
+    });
+    
+    elements.modeClassicButton.addEventListener('click', () => {
+        elements.gameModePopup.classList.add('hidden');
+        startGameFlow('classic');
+    });
+
+    elements.modeHiddenButton.addEventListener('click', () => {
+        elements.gameModePopup.classList.add('hidden');
+        startGameFlow('hidden');
+    });
+
+    elements.closeModePopupButton.addEventListener('click', () => {
+        playSound('ui-click');
+        elements.gameModePopup.classList.add('hidden');
+    });
     
     // Menú principal con sonido
     elements.howToPlayButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.howToPlayScreen); });
@@ -883,7 +918,7 @@ function mainApp() {
     elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
     elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { /* No reiniciamos el hardStopTimer */ } });
     elements.confirmExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-    elements.playAgainButton.addEventListener('click', () => { elements.endGamePopup.classList.add('hidden'); startGameFlow(); });
+    elements.playAgainButton.addEventListener('click', () => { startGameFlow(currentGameMode); elements.endGamePopup.classList.add('hidden'); });
     elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
     elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
     elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
