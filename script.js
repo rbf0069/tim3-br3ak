@@ -96,6 +96,7 @@ function mainApp() {
         gameModePopup: document.getElementById('game-mode-popup'),
         modeClassicButton: document.getElementById('mode-classic-button'),
         modeHiddenButton: document.getElementById('mode-hidden-button'),
+        modeProButton: document.getElementById('mode-pro-button'),
         closeModePopupButton: document.getElementById('close-mode-popup-button'),
         resetDataPopup: document.getElementById('reset-data-popup'),
         confirmResetButton: document.getElementById('confirm-reset-button'),
@@ -116,7 +117,7 @@ function mainApp() {
     let userProfile = { nickname: '', avatar: 'avatar-circle' };
     let gameState = 'ready', attemptsLeft = 10, score = 0, bestScoreToday = 0;
     let intervalId = null, startTime = 0, elapsedTime = 0, timeWhenStopped = 0;
-    const GAME_DURATION_LIMIT = 10000, HARD_STOP_LIMIT = 15000;
+    const HARD_STOP_LIMIT = 15000;
     let hardStopTimer = null;
     let settings = { sound: true, vibration: true, showScore: true };
     let selectedAvatar = 'avatar-circle';
@@ -124,6 +125,7 @@ function mainApp() {
     let hasNewRequests = false; 
     const audio = {};
     let currentGameMode = 'classic';
+    let currentGameDuration = 10000;
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
@@ -399,6 +401,21 @@ function mainApp() {
 
     function startGameFlow(mode) {
         currentGameMode = mode;
+
+        switch (mode) {
+            case 'classic':
+                currentGameDuration = 10000;
+                break;
+            case 'hidden':
+                currentGameDuration = 10000;
+                break;
+            case 'pro':
+                currentGameDuration = 3000;
+                break;
+            default:
+                currentGameDuration = 10000;
+        }
+
         playSound('start-game');
         vibrate(50);
         resetGame();
@@ -435,8 +452,8 @@ function mainApp() {
 
     function updateChronometer() {
         elapsedTime = Date.now() - startTime + timeWhenStopped;
-        if (elapsedTime >= GAME_DURATION_LIMIT) {
-            elapsedTime = GAME_DURATION_LIMIT;
+        if (elapsedTime >= currentGameDuration) { // Usa la variable
+            elapsedTime = currentGameDuration;
             updateChronometerDisplay();
             endGame('time_limit');
             return;
@@ -513,7 +530,6 @@ function mainApp() {
             updateChronometerDisplay();
         }
         
-        // AÑADIMOS UN RETRASO PARA MOSTRAR EL POPUP
         setTimeout(() => {
             elements.endGamePopup.classList.remove('hidden');
         }, 300);
@@ -913,6 +929,11 @@ function mainApp() {
         if (elements.modeHiddenButton) elements.modeHiddenButton.addEventListener('click', () => {
             elements.gameModePopup.classList.add('hidden');
             startGameFlow('hidden');
+        });
+
+        if (elements.modeProButton) elements.modeProButton.addEventListener('click', () => {
+            elements.gameModePopup.classList.add('hidden');
+            startGameFlow('pro');
         });
 
         if (elements.closeModePopupButton) elements.closeModePopupButton.addEventListener('click', () => {
