@@ -48,16 +48,18 @@ function mainApp() {
         rankingScreen: document.getElementById('ranking-screen'),
         settingsScreen: document.getElementById('settings-screen'),
         aboutScreen: document.getElementById('about-screen'),
+        infoScreen: document.getElementById('info-screen'),
         profileScreen: document.getElementById('profile-screen'),
         friendsScreen: document.getElementById('friends-screen'),
         playButton: document.getElementById('play-button'),
-        howToPlayButton: document.getElementById('how-to-play-button'),
         rankingButton: document.getElementById('ranking-button'),
-        settingsButton: document.getElementById('settings-button'),
-        aboutButton: document.getElementById('about-button'),
-        editProfileButton: document.getElementById('edit-profile-button'),
         friendsButton: document.getElementById('friends-button'),
+        settingsIconButton: document.getElementById('settings-icon-button'),
+        infoIconButton: document.getElementById('info-icon-button'),
+        infoNavHowToPlayButton: document.getElementById('info-nav-how-to-play-button'),
+        infoNavAboutButton: document.getElementById('info-nav-about-button'),
         backToMainButtons: document.querySelectorAll('[id^="back-to-main-"]'),
+        editProfileButton: document.getElementById('edit-profile-button'),
         backToSettingsFromProfileButton: document.getElementById('back-to-settings-from-profile-button'),
         exitButton: document.getElementById('exit-button'),
         chronometerDisplay: document.getElementById('chronometer'),
@@ -129,7 +131,6 @@ function mainApp() {
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
-    // --- FUNCIONES DE SONIDO Y VIBRACIÓN ---
     function preloadAudio() {
         const soundFiles = ['ui-click', 'start-game', 'stop-button', 'score-point', 'score-hit', 'game-over', 'new-best-score'];
         soundFiles.forEach(soundName => {
@@ -153,8 +154,7 @@ function mainApp() {
 
     function setAppLoading(isLoading) {
         const mainButtons = [
-            elements.playButton, elements.friendsButton, elements.howToPlayButton, 
-            elements.rankingButton, elements.settingsButton, elements.aboutButton
+            elements.playButton, elements.friendsButton, elements.rankingButton
         ];
         mainButtons.forEach(button => {
             if (button) {
@@ -319,9 +319,9 @@ function mainApp() {
     }
 
     function showScreen(screenToShow) {
-        const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.profileScreen, elements.friendsScreen];
+        const screens = [elements.mainScreen, elements.gameScreen, elements.howToPlayScreen, elements.rankingScreen, elements.settingsScreen, elements.aboutScreen, elements.infoScreen, elements.profileScreen, elements.friendsScreen];
         screens.forEach(screen => { if (screen) screen.classList.add('hidden') });
-        if(screenToShow) screenToShow.classList.remove('hidden');
+        if (screenToShow) screenToShow.classList.remove('hidden');
     }
 
     function initializeAppUI() {
@@ -353,7 +353,7 @@ function mainApp() {
                 avatarContainer.appendChild(avatar);
             }
             elements.profileDisplay.appendChild(avatarContainer);
-            
+
             const nickEl = document.createElement('span');
             nickEl.textContent = userProfile.nickname;
             elements.profileDisplay.appendChild(nickEl);
@@ -390,7 +390,7 @@ function mainApp() {
         elements.currentScoreDisplay.textContent = 0;
         elements.actionButton.textContent = '¡GO!';
         elements.actionButton.className = "action-button w-1/2 h-20 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-2xl rounded-full flex items-center justify-center";
-        
+
         if (settings.showScore) {
             elements.currentScoreContainer.classList.remove('hidden');
         } else {
@@ -404,8 +404,6 @@ function mainApp() {
 
         switch (mode) {
             case 'classic':
-                currentGameDuration = 10000;
-                break;
             case 'hidden':
                 currentGameDuration = 10000;
                 break;
@@ -419,11 +417,11 @@ function mainApp() {
         playSound('start-game');
         vibrate(50);
         resetGame();
-        
+
         if (currentGameMode === 'hidden') {
             elements.chronometerDisplay.classList.add('opacity-0');
         }
-        
+
         showScreen(elements.gameScreen);
     }
 
@@ -513,7 +511,7 @@ function mainApp() {
         gameState = 'finished';
         clearInterval(intervalId);
         clearTimeout(hardStopTimer);
-        
+
         playSound('game-over');
         vibrate([100, 50, 100]);
 
@@ -524,12 +522,12 @@ function mainApp() {
             await saveBestScore();
         }
         await saveRanking(score);
-        
+
         if (currentGameMode === 'hidden') {
             elements.chronometerDisplay.classList.remove('opacity-0');
             updateChronometerDisplay();
         }
-        
+
         setTimeout(() => {
             elements.endGamePopup.classList.remove('hidden');
         }, 300);
@@ -540,7 +538,7 @@ function mainApp() {
             gameState = 'running';
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
-            
+
             hardStopTimer = setTimeout(() => endGame('hard_stop_timeout'), HARD_STOP_LIMIT);
 
             elements.actionButton.textContent = 'STOP';
@@ -621,7 +619,7 @@ function mainApp() {
             elements.showScoreCheckmark.classList.add('hidden');
         }
     }
-    
+
     function displayFriends(friendsList) {
         const container = elements.friendsListContainer;
         if (!container) return;
@@ -725,7 +723,7 @@ function mainApp() {
             container.innerHTML = `<div class="text-center text-red-500 p-4">Error al buscar.</div>`;
         }
     }
-    
+
     async function sendFriendRequest(button) {
         const friendId = button.dataset.id;
         if (!userId || !friendId) return;
@@ -941,16 +939,32 @@ function mainApp() {
             elements.gameModePopup.classList.add('hidden');
         });
         
-        if (elements.howToPlayButton) elements.howToPlayButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.howToPlayScreen); });
+        if (elements.settingsIconButton) elements.settingsIconButton.addEventListener('click', () => { 
+            playSound('ui-click'); 
+            showScreen(elements.settingsScreen); 
+        });
+
+        if (elements.infoIconButton) elements.infoIconButton.addEventListener('click', () => { 
+            playSound('ui-click'); 
+            showScreen(elements.infoScreen); 
+        });
+
+        if (elements.infoNavHowToPlayButton) elements.infoNavHowToPlayButton.addEventListener('click', () => { 
+            playSound('ui-click'); 
+            showScreen(elements.howToPlayScreen); 
+        });
+
+        if (elements.infoNavAboutButton) elements.infoNavAboutButton.addEventListener('click', () => { 
+            playSound('ui-click'); 
+            showScreen(elements.aboutScreen); 
+        });
+
         if (elements.rankingButton) elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
-        if (elements.settingsButton) elements.settingsButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
-        if (elements.aboutButton) elements.aboutButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.aboutScreen); });
         if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
-        if (elements.editProfileButton) elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
-        
-        if (elements.deleteNicknameButton) elements.deleteNicknameButton.addEventListener('click', deleteUserByNickname);
         
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
+        
+        if (elements.editProfileButton) elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
         if (elements.backToSettingsFromProfileButton) elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
         
         if (elements.actionButton) elements.actionButton.addEventListener('click', handleActionClick);
