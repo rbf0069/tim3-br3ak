@@ -88,4 +88,14 @@ body {
 .avatar-selected {
     outline: 2px solid #34D399; /* Verde esmeralda */
     background-color: #374151; /* Gris más oscuro */
+
+}
+
+/* --- ESTILOS PARA ICONOS --- */
+.icon-button {
+    transition: transform 0.2s ease-in-out;
+}
+
+.icon-button:active {
+    transform: scale(0.9);
 }
