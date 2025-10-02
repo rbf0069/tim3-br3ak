@@ -92,13 +92,14 @@ function mainApp() {
         confirmExitButton: document.getElementById('confirm-exit-button'),
         cancelExitButton: document.getElementById('cancel-exit-button'),
         endGamePopup: document.getElementById('end-game-popup'),
-        finalScoreDisplay: document.getElementById('final-score'),
+        finalScoreText: document.querySelector('#end-game-popup .text-xl'),
         playAgainButton: document.getElementById('play-again-button'),
         mainMenuButton: document.getElementById('main-menu-button'),
         gameModePopup: document.getElementById('game-mode-popup'),
         modeClassicButton: document.getElementById('mode-classic-button'),
         modeHiddenButton: document.getElementById('mode-hidden-button'),
         modeProButton: document.getElementById('mode-pro-button'),
+        modeFastButton: document.getElementById('mode-fast-button'),
         closeModePopupButton: document.getElementById('close-mode-popup-button'),
         resetDataPopup: document.getElementById('reset-data-popup'),
         confirmResetButton: document.getElementById('confirm-reset-button'),
@@ -128,6 +129,7 @@ function mainApp() {
     const audio = {};
     let currentGameMode = 'classic';
     let currentGameDuration = 10000;
+    let gameSpeedMultiplier = 1;
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
@@ -265,12 +267,12 @@ function mainApp() {
         }
     }
 
-    async function saveBestScore() {
+    async function saveBestScore(scoreToSave) {
         if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         const today = new Date().toLocaleDateString();
         try {
-            await setDoc(userDocRef, { bestScore: { score: bestScoreToday, date: today } }, { merge: true });
+            await setDoc(userDocRef, { bestScore: { score: scoreToSave, date: today } }, { merge: true });
             playSound('new-best-score');
         } catch (error) {
             console.error("Error saving best score:", error);
@@ -401,6 +403,7 @@ function mainApp() {
 
     function startGameFlow(mode) {
         currentGameMode = mode;
+        gameSpeedMultiplier = 1; // Resetea la velocidad por defecto
 
         switch (mode) {
             case 'classic':
@@ -410,10 +413,15 @@ function mainApp() {
             case 'pro':
                 currentGameDuration = 3000;
                 break;
+            case 'fast':
+                currentGameDuration = 10000;
+                gameSpeedMultiplier = 2; // El tiempo corre al doble de velocidad
+                break;
             default:
                 currentGameDuration = 10000;
         }
 
+        // Se movió la vibración y sonido al pulsar GO en handleActionClick
         resetGame();
 
         if (currentGameMode === 'hidden') {
@@ -447,8 +455,10 @@ function mainApp() {
     }
 
     function updateChronometer() {
-        elapsedTime = Date.now() - startTime + timeWhenStopped;
-        if (elapsedTime >= currentGameDuration) { // Usa la variable
+        const realElapsedTime = Date.now() - startTime;
+        elapsedTime = timeWhenStopped + (realElapsedTime * gameSpeedMultiplier); // Lógica de velocidad
+
+        if (elapsedTime >= currentGameDuration) {
             elapsedTime = currentGameDuration;
             updateChronometerDisplay();
             endGame('time_limit');
@@ -512,14 +522,29 @@ function mainApp() {
 
         playSound('game-over');
         vibrate([100, 50, 100]);
-
-        elements.finalScoreDisplay.textContent = score;
-        if (score > bestScoreToday) {
-            bestScoreToday = score;
-            elements.bestScoreDisplay.textContent = bestScoreToday;
-            await saveBestScore();
+        
+        // --- LÓGICA DE BONUS ---
+        let bonus = 0;
+        if (score > 0) { // Solo hay bonus si el jugador ha puntuado
+            if (currentGameMode === 'hidden') bonus = 5;
+            if (currentGameMode === 'pro') bonus = 10;
+            if (currentGameMode === 'fast') bonus = 10;
         }
-        await saveRanking(score);
+        const finalScoreWithBonus = score + bonus;
+        
+        // Actualiza el texto del pop-up para mostrar el desglose
+        if (bonus > 0) {
+            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
+        } else {
+            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${score}</span>`;
+        }
+
+        if (finalScoreWithBonus > bestScoreToday) {
+            bestScoreToday = finalScoreWithBonus;
+            elements.bestScoreDisplay.textContent = bestScoreToday;
+            await saveBestScore(finalScoreWithBonus);
+        }
+        await saveRanking(finalScoreWithBonus);
 
         if (currentGameMode === 'hidden') {
             elements.chronometerDisplay.classList.remove('opacity-0');
@@ -533,7 +558,8 @@ function mainApp() {
 
     function handleActionClick() {
         if (gameState === 'ready') {
-            playSound('start-game'); //
+            playSound('start-game');
+            vibrate(50);
             gameState = 'running';
             startTime = Date.now();
             intervalId = setInterval(updateChronometer, 10);
@@ -823,23 +849,23 @@ function mainApp() {
             container.appendChild(requestCard);
         });
     }
-    
+
     async function handleFriendRequest(requestId, action) {
         if (!isAuthReady) return;
         const handleRequest = httpsCallable(functions, 'handleFriendRequest');
         try {
             const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
             buttons.forEach(btn => btn.disabled = true);
-            
-            await handleRequest({ 
-                requestId, 
-                action, 
+
+            await handleRequest({
+                requestId,
+                action,
                 accepterProfile: {
                     nickname: userProfile.nickname,
                     avatar: userProfile.avatar
                 }
             });
-            
+
         } catch (error) {
             console.error("Error al llamar a la Cloud Function:", error);
             const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
@@ -854,7 +880,7 @@ function mainApp() {
             elements.deleteFeedback.textContent = "Introduce un nick.";
             return;
         }
-        
+
         elements.deleteFeedback.textContent = "Borrando...";
         const deleteFunction = httpsCallable(functions, 'deleteUserByNickname');
         try {
@@ -875,7 +901,7 @@ function mainApp() {
             setAppLoading(true);
             initializeAppUI();
             preloadAudio();
-            
+
             const firebaseConfig = {
                 apiKey: "AIzaSyDSm5KfMJEQj8jVB0CfqvkyABH-rNNKgc4",
                 authDomain: "tim3-br3ak.firebaseapp.com",
@@ -915,7 +941,7 @@ function mainApp() {
             playSound('ui-click');
             elements.gameModePopup.classList.remove('hidden');
         });
-    
+
         if (elements.modeClassicButton) elements.modeClassicButton.addEventListener('click', () => {
             elements.gameModePopup.classList.add('hidden');
             startGameFlow('classic');
@@ -931,47 +957,52 @@ function mainApp() {
             startGameFlow('pro');
         });
 
+        if (elements.modeFastButton) elements.modeFastButton.addEventListener('click', () => {
+            elements.gameModePopup.classList.add('hidden');
+            startGameFlow('fast');
+        });
+
         if (elements.closeModePopupButton) elements.closeModePopupButton.addEventListener('click', () => {
             playSound('ui-click');
             elements.gameModePopup.classList.add('hidden');
         });
-        
-        if (elements.settingsIconButton) elements.settingsIconButton.addEventListener('click', () => { 
-            playSound('ui-click'); 
-            showScreen(elements.settingsScreen); 
+
+        if (elements.settingsIconButton) elements.settingsIconButton.addEventListener('click', () => {
+            playSound('ui-click');
+            showScreen(elements.settingsScreen);
         });
 
-        if (elements.infoIconButton) elements.infoIconButton.addEventListener('click', () => { 
-            playSound('ui-click'); 
-            showScreen(elements.infoScreen); 
+        if (elements.infoIconButton) elements.infoIconButton.addEventListener('click', () => {
+            playSound('ui-click');
+            showScreen(elements.infoScreen);
         });
 
-        if (elements.infoNavHowToPlayButton) elements.infoNavHowToPlayButton.addEventListener('click', () => { 
-            playSound('ui-click'); 
-            showScreen(elements.howToPlayScreen); 
+        if (elements.infoNavHowToPlayButton) elements.infoNavHowToPlayButton.addEventListener('click', () => {
+            playSound('ui-click');
+            showScreen(elements.howToPlayScreen);
         });
 
-        if (elements.infoNavAboutButton) elements.infoNavAboutButton.addEventListener('click', () => { 
-            playSound('ui-click'); 
-            showScreen(elements.aboutScreen); 
+        if (elements.infoNavAboutButton) elements.infoNavAboutButton.addEventListener('click', () => {
+            playSound('ui-click');
+            showScreen(elements.aboutScreen);
         });
 
-        if (elements.rankingButton) elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if(isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
-        if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
-        
+        if (elements.rankingButton) elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if (isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
+        if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if (isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
+
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
-        
-        if (elements.editProfileButton) elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if(isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
+
+        if (elements.editProfileButton) elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if (isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
         if (elements.backToSettingsFromProfileButton) elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
-        
+
         if (elements.actionButton) elements.actionButton.addEventListener('click', handleActionClick);
         if (elements.exitButton) elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
         if (elements.cancelExitButton) elements.cancelExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); if (gameState === 'running') { startTime = Date.now(); intervalId = setInterval(updateChronometer, 10); } if (gameState === 'stopped') { /* No reiniciamos el hardStopTimer */ } });
         if (elements.confirmExitButton) elements.confirmExitButton.addEventListener('click', () => { playSound('ui-click'); elements.exitPopup.classList.add('hidden'); showScreen(elements.mainScreen); });
-        
+
         if (elements.playAgainButton) elements.playAgainButton.addEventListener('click', () => {
             elements.endGamePopup.classList.add('hidden');
-            startGameFlow(currentGameMode); 
+            startGameFlow(currentGameMode);
         });
 
         if (elements.mainMenuButton) elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
@@ -985,7 +1016,7 @@ function mainApp() {
         if (elements.friendsTabList) elements.friendsTabList.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('list'); });
         if (elements.friendsTabRequests) elements.friendsTabRequests.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('requests'); });
         if (elements.addFriendInput) elements.addFriendInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') { searchPlayers(e.target.value); } });
-        
+
         if (elements.avatarGallery) {
             AVATAR_IDS.forEach(id => {
                 const avatarContainer = document.createElement('div');
@@ -1010,5 +1041,3 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
-
-
