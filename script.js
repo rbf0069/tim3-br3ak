@@ -68,7 +68,10 @@ function mainApp() {
         dateDisplay: document.getElementById('date-display'),
         scoreFeedback: document.getElementById('score-feedback'),
         bestScoreDisplay: document.getElementById('best-score-display'),
-        rankingList: document.getElementById('ranking-list'),
+        personalRankingList: document.getElementById('personal-ranking-list'), 
+        globalRankingList: document.getElementById('global-ranking-list'), 
+        rankingTabPersonal: document.getElementById('ranking-tab-personal'), 
+        rankingTabGlobal: document.getElementById('ranking-tab-global'), 
         profileDisplay: document.getElementById('profile-display'),
         resetDataButton: document.getElementById('reset-data-button'),
         soundCheckbox: document.getElementById('sound-checkbox'),
@@ -607,25 +610,25 @@ async function endGame(reason) {
         }
     }
 
-    async function displayRanking() {
+async function displayPersonalRanking() {
         const userDocRef = doc(db, "users", userId);
-        elements.rankingList.innerHTML = '';
+        elements.personalRankingList.innerHTML = ''; 
         try {
             const docSnap = await getDoc(userDocRef);
             const ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : [];
             if (ranking.length === 0) {
-                elements.rankingList.innerHTML = `<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>`;
+                elements.personalRankingList.innerHTML = `<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>`; // <-- APUNTA A LA NUEVA LISTA
                 return;
             }
             const rankColors = ['text-yellow-400', 'text-gray-300', 'text-yellow-600'];
             ranking.forEach((entry, index) => {
                 const colorClass = index < 3 ? rankColors[index] : 'text-white';
                 const listItem = ` <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg"> <span class="font-bold text-2xl w-12 text-center ${colorClass}">#${index + 1}</span> <span class="font-chrono text-3xl flex-grow text-center ${colorClass}">${entry.score} PTS</span> <span class="text-sm text-gray-500 w-24 text-right">${entry.date}</span> </div>`;
-                elements.rankingList.innerHTML += listItem;
+                elements.personalRankingList.innerHTML += listItem; 
             });
         } catch (error) {
-            console.error("Error displaying ranking:", error);
-            elements.rankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`;
+            console.error("Error displaying personal ranking:", error);
+            elements.personalRankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`; // <-- APUNTA A LA NUEVA LISTA
         }
     }
 
@@ -691,27 +694,26 @@ async function endGame(reason) {
         });
     }
 
-    function switchFriendsTab(activeTab) {
-        const { friendsTabList, friendsTabRequests, friendsListContainer, requestsListContainer } = elements;
-        if (!friendsTabList) return;
-        if (activeTab === 'list') {
-            friendsTabList.classList.remove("text-gray-400", "border-transparent");
-            friendsTabList.classList.add("text-white", "border-purple-500");
-            friendsTabRequests.classList.add("text-gray-400", "border-transparent");
-            friendsTabRequests.classList.remove("text-white", "border-purple-500");
-            friendsListContainer.classList.remove("hidden");
-            requestsListContainer.classList.add("hidden");
-        } else { // 'requests'
-            friendsTabRequests.classList.remove("text-gray-400", "border-transparent");
-            friendsTabRequests.classList.add("text-white", "border-purple-500");
-            friendsTabList.classList.add("text-gray-400", "border-transparent");
-            friendsTabList.classList.remove("text-white", "border-purple-500");
-            if (hasNewRequests) {
-                hasNewRequests = false;
-                updateNotificationUI();
-            }
-            requestsListContainer.classList.remove("hidden");
-            friendsListContainer.classList.add("hidden");
+    function switchRankingTab(activeTab) {
+        const { rankingTabPersonal, rankingTabGlobal, personalRankingList, globalRankingList } = elements;
+        if (!rankingTabPersonal) return;
+
+        if (activeTab === 'personal') {
+            rankingTabPersonal.classList.add("text-white", "border-purple-500");
+            rankingTabPersonal.classList.remove("text-gray-400", "border-transparent");
+            rankingTabGlobal.classList.add("text-gray-400", "border-transparent");
+            rankingTabGlobal.classList.remove("text-white", "border-purple-500");
+            
+            personalRankingList.classList.remove("hidden");
+            globalRankingList.classList.add("hidden");
+        } else { // 'global'
+            rankingTabGlobal.classList.add("text-white", "border-purple-500");
+            rankingTabGlobal.classList.remove("text-gray-400", "border-transparent");
+            rankingTabPersonal.classList.add("text-gray-400", "border-transparent");
+            rankingTabPersonal.classList.remove("text-white", "border-purple-500");
+
+            globalRankingList.classList.remove("hidden");
+            personalRankingList.classList.add("hidden");
         }
     }
 
@@ -1052,6 +1054,7 @@ async function endGame(reason) {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
