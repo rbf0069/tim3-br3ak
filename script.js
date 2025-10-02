@@ -1041,8 +1041,6 @@ function mainApp() {
             switchRankingTab('global');
         });
         
-      
-
         if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => {
             playSound('ui-click'); 
             if (isAuthReady) { 
@@ -1050,8 +1048,6 @@ function mainApp() {
                 showScreen(elements.friendsScreen); 
             } 
         });
-
-        elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
 
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
 
@@ -1105,4 +1101,3 @@ function mainApp() {
 // Punto de entrada inicial
 checkPasswordAndInit();
 }
-
