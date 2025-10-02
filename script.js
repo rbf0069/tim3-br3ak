@@ -515,47 +515,57 @@ function mainApp() {
         if (pointsThisTurn > 0) showScoreFeedback(feedbackText);
     }
 
-    async function endGame(reason) {
-        if (gameState === 'finished') return;
-        gameState = 'finished';
-        clearInterval(intervalId);
-        clearTimeout(hardStopTimer);
+async function endGame(reason) {
+    if (gameState === 'finished') return;
+    gameState = 'finished';
+    clearInterval(intervalId);
+    clearTimeout(hardStopTimer);
 
-        playSound('game-over');
-        vibrate([100, 50, 100]);
-        
-        // --- LÓGICA DE BONUS ---
-        let bonus = 0;
-        if (score > 0) { // Solo hay bonus si el jugador ha puntuado
-            if (currentGameMode === 'hidden') bonus = 5;
-            if (currentGameMode === 'pro') bonus = 3;
-            if (currentGameMode === 'fast') bonus = 2;
-        }
-        const finalScoreWithBonus = score + bonus;
-        
-        // Actualiza el texto del pop-up para mostrar el desglose
-        if (bonus > 0) {
-            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
-        } else {
-            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${score}</span>`;
-        }
-
-        if (finalScoreWithBonus > bestScoreToday) {
-            bestScoreToday = finalScoreWithBonus;
-            elements.bestScoreDisplay.textContent = bestScoreToday;
-            await saveBestScore(finalScoreWithBonus);
-        }
-        await saveRanking(finalScoreWithBonus);
-
-        if (currentGameMode === 'hidden') {
-            elements.chronometerDisplay.classList.remove('opacity-0');
-            updateChronometerDisplay();
-        }
-
-        setTimeout(() => {
-            elements.endGamePopup.classList.remove('hidden');
-        }, 300);
+    playSound('game-over');
+    vibrate([100, 50, 100]);
+    
+    // --- LÓGICA DE BONUS ---
+    let bonus = 0;
+    if (score > 0) {
+        if (currentGameMode === 'hidden') bonus = 5;
+        if (currentGameMode === 'pro') bonus = 3;
+        if (currentGameMode === 'fast') bonus = 2;
     }
+    const finalScoreWithBonus = score + bonus;
+    
+    if (bonus > 0) {
+        elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
+    } else {
+        elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${score}</span>`;
+    }
+
+    if (finalScoreWithBonus > bestScoreToday) {
+        bestScoreToday = finalScoreWithBonus;
+        elements.bestScoreDisplay.textContent = bestScoreToday;
+        await saveBestScore(finalScoreWithBonus);
+    }
+    await saveRanking(finalScoreWithBonus);
+
+    // --- NUEVA LLAMADA A LA CLOUD FUNCTION ---
+    if (finalScoreWithBonus > 0) {
+        try {
+            const submitScore = httpsCallable(functions, 'submitScore');
+            await submitScore({ score: finalScoreWithBonus });
+            console.log("Puntuación enviada al ranking global.");
+        } catch (error) {
+            console.error("Error al enviar la puntuación global:", error);
+        }
+    }
+    
+    if (currentGameMode === 'hidden') {
+        elements.chronometerDisplay.classList.remove('opacity-0');
+        updateChronometerDisplay();
+    }
+    
+    setTimeout(() => {
+        if (elements.endGamePopup) elements.endGamePopup.classList.remove('hidden');
+    }, 300);
+}
 
     function handleActionClick() {
         if (gameState === 'ready') {
@@ -1042,5 +1052,6 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
