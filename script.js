@@ -267,11 +267,12 @@ function mainApp() {
         }
     }
 
-    async function saveBestScore(scoreToSave) {
+ async function saveBestScore(scoreToSave) { // <--- 1. AÑADIR PARÁMETRO
         if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         const today = new Date().toLocaleDateString();
         try {
+            // --- 2. USAR EL PARÁMETRO EN LUGAR DE LA VARIABLE GLOBAL ---
             await setDoc(userDocRef, { bestScore: { score: scoreToSave, date: today } }, { merge: true });
             playSound('new-best-score');
         } catch (error) {
@@ -1041,3 +1042,4 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
