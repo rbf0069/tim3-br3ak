@@ -68,10 +68,10 @@ function mainApp() {
         dateDisplay: document.getElementById('date-display'),
         scoreFeedback: document.getElementById('score-feedback'),
         bestScoreDisplay: document.getElementById('best-score-display'),
-        personalRankingList: document.getElementById('personal-ranking-list'), 
-        globalRankingList: document.getElementById('global-ranking-list'), 
-        rankingTabPersonal: document.getElementById('ranking-tab-personal'), 
-        rankingTabGlobal: document.getElementById('ranking-tab-global'), 
+        personalRankingList: document.getElementById('personal-ranking-list'),
+        globalRankingList: document.getElementById('global-ranking-list'),
+        rankingTabPersonal: document.getElementById('ranking-tab-personal'),
+        rankingTabGlobal: document.getElementById('ranking-tab-global'),
         profileDisplay: document.getElementById('profile-display'),
         resetDataButton: document.getElementById('reset-data-button'),
         soundCheckbox: document.getElementById('sound-checkbox'),
@@ -128,7 +128,7 @@ function mainApp() {
     let settings = { sound: true, vibration: true, showScore: true };
     let selectedAvatar = 'avatar-circle';
     const AVATAR_IDS = ['avatar-circle', 'avatar-square', 'avatar-triangle', 'avatar-star', 'avatar-heart', 'avatar-zap', 'avatar-shield', 'avatar-ghost', 'avatar-diamond', 'avatar-anchor', 'avatar-aperture', 'avatar-cloud', 'avatar-crown', 'avatar-moon', 'avatar-sun', 'avatar-key'];
-    let hasNewRequests = false; 
+    let hasNewRequests = false;
     const audio = {};
     let currentGameMode = 'classic';
     let currentGameDuration = 10000;
@@ -270,12 +270,11 @@ function mainApp() {
         }
     }
 
- async function saveBestScore(scoreToSave) { // <--- 1. AÑADIR PARÁMETRO
+    async function saveBestScore(scoreToSave) {
         if (!isAuthReady) return;
         const userDocRef = doc(db, "users", userId);
         const today = new Date().toLocaleDateString();
         try {
-            // --- 2. USAR EL PARÁMETRO EN LUGAR DE LA VARIABLE GLOBAL ---
             await setDoc(userDocRef, { bestScore: { score: scoreToSave, date: today } }, { merge: true });
             playSound('new-best-score');
         } catch (error) {
@@ -518,57 +517,57 @@ function mainApp() {
         if (pointsThisTurn > 0) showScoreFeedback(feedbackText);
     }
 
-async function endGame(reason) {
-    if (gameState === 'finished') return;
-    gameState = 'finished';
-    clearInterval(intervalId);
-    clearTimeout(hardStopTimer);
+    async function endGame(reason) {
+        if (gameState === 'finished') return;
+        gameState = 'finished';
+        clearInterval(intervalId);
+        clearTimeout(hardStopTimer);
 
-    playSound('game-over');
-    vibrate([100, 50, 100]);
-    
-    // --- LÓGICA DE BONUS ---
-    let bonus = 0;
-    if (score > 0) {
-        if (currentGameMode === 'hidden') bonus = 5;
-        if (currentGameMode === 'pro') bonus = 3;
-        if (currentGameMode === 'fast') bonus = 2;
-    }
-    const finalScoreWithBonus = score + bonus;
-    
-    if (bonus > 0) {
-        elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
-    } else {
-        elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${score}</span>`;
-    }
+        playSound('game-over');
+        vibrate([100, 50, 100]);
 
-    if (finalScoreWithBonus > bestScoreToday) {
-        bestScoreToday = finalScoreWithBonus;
-        elements.bestScoreDisplay.textContent = bestScoreToday;
-        await saveBestScore(finalScoreWithBonus);
-    }
-    await saveRanking(finalScoreWithBonus);
-
-    // --- NUEVA LLAMADA A LA CLOUD FUNCTION ---
-    if (finalScoreWithBonus > 0) {
-        try {
-            const submitScore = httpsCallable(functions, 'submitScore');
-            await submitScore({ score: finalScoreWithBonus });
-            console.log("Puntuación enviada al ranking global.");
-        } catch (error) {
-            console.error("Error al enviar la puntuación global:", error);
+        // --- LÓGICA DE BONUS ---
+        let bonus = 0;
+        if (score > 0) {
+            if (currentGameMode === 'hidden') bonus = 5;
+            if (currentGameMode === 'pro') bonus = 3;
+            if (currentGameMode === 'fast') bonus = 2;
         }
+        const finalScoreWithBonus = score + bonus;
+
+        if (bonus > 0) {
+            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
+        } else {
+            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${score}</span>`;
+        }
+
+        if (finalScoreWithBonus > bestScoreToday) {
+            bestScoreToday = finalScoreWithBonus;
+            elements.bestScoreDisplay.textContent = bestScoreToday;
+            await saveBestScore(finalScoreWithBonus);
+        }
+        await saveRanking(finalScoreWithBonus);
+
+        // --- NUEVA LLAMADA A LA CLOUD FUNCTION ---
+        if (finalScoreWithBonus > 0) {
+            try {
+                const submitScore = httpsCallable(functions, 'submitScore');
+                await submitScore({ score: finalScoreWithBonus });
+                console.log("Puntuación enviada al ranking global.");
+            } catch (error) {
+                console.error("Error al enviar la puntuación global:", error);
+            }
+        }
+
+        if (currentGameMode === 'hidden') {
+            elements.chronometerDisplay.classList.remove('opacity-0');
+            updateChronometerDisplay();
+        }
+
+        setTimeout(() => {
+            if (elements.endGamePopup) elements.endGamePopup.classList.remove('hidden');
+        }, 300);
     }
-    
-    if (currentGameMode === 'hidden') {
-        elements.chronometerDisplay.classList.remove('opacity-0');
-        updateChronometerDisplay();
-    }
-    
-    setTimeout(() => {
-        if (elements.endGamePopup) elements.endGamePopup.classList.remove('hidden');
-    }, 300);
-}
 
     function handleActionClick() {
         if (gameState === 'ready') {
@@ -610,25 +609,25 @@ async function endGame(reason) {
         }
     }
 
-async function displayPersonalRanking() {
+    async function displayPersonalRanking() {
         const userDocRef = doc(db, "users", userId);
-        elements.personalRankingList.innerHTML = ''; 
+        elements.personalRankingList.innerHTML = '';
         try {
             const docSnap = await getDoc(userDocRef);
             const ranking = (docSnap.exists() && docSnap.data().ranking) ? docSnap.data().ranking : [];
             if (ranking.length === 0) {
-                elements.personalRankingList.innerHTML = `<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>`; // <-- APUNTA A LA NUEVA LISTA
+                elements.personalRankingList.innerHTML = `<div class="text-gray-400 text-center">Aún no has puntuado. ¡Juega para ser el primero!</div>`;
                 return;
             }
             const rankColors = ['text-yellow-400', 'text-gray-300', 'text-yellow-600'];
             ranking.forEach((entry, index) => {
                 const colorClass = index < 3 ? rankColors[index] : 'text-white';
                 const listItem = ` <div class="flex items-center justify-between bg-gray-800 p-4 rounded-lg"> <span class="font-bold text-2xl w-12 text-center ${colorClass}">#${index + 1}</span> <span class="font-chrono text-3xl flex-grow text-center ${colorClass}">${entry.score} PTS</span> <span class="text-sm text-gray-500 w-24 text-right">${entry.date}</span> </div>`;
-                elements.personalRankingList.innerHTML += listItem; 
+                elements.personalRankingList.innerHTML += listItem;
             });
         } catch (error) {
             console.error("Error displaying personal ranking:", error);
-            elements.personalRankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`; // <-- APUNTA A LA NUEVA LISTA
+            elements.personalRankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`;
         }
     }
 
@@ -714,6 +713,30 @@ async function displayPersonalRanking() {
 
             globalRankingList.classList.remove("hidden");
             personalRankingList.classList.add("hidden");
+        }
+    }
+
+    function switchFriendsTab(activeTab) {
+        const { friendsTabList, friendsTabRequests, friendsListContainer, requestsListContainer } = elements;
+        if (!friendsTabList) return;
+        if (activeTab === 'list') {
+            friendsTabList.classList.remove("text-gray-400", "border-transparent");
+            friendsTabList.classList.add("text-white", "border-purple-500");
+            friendsTabRequests.classList.add("text-gray-400", "border-transparent");
+            friendsTabRequests.classList.remove("text-white", "border-purple-500");
+            friendsListContainer.classList.remove("hidden");
+            requestsListContainer.classList.add("hidden");
+        } else { // 'requests'
+            friendsTabRequests.classList.remove("text-gray-400", "border-transparent");
+            friendsTabRequests.classList.add("text-white", "border-purple-500");
+            friendsTabList.classList.add("text-gray-400", "border-transparent");
+            friendsTabList.classList.remove("text-white", "border-purple-500");
+            if (hasNewRequests) {
+                hasNewRequests = false;
+                updateNotificationUI();
+            }
+            requestsListContainer.classList.remove("hidden");
+            friendsListContainer.classList.add("hidden");
         }
     }
 
@@ -1003,9 +1026,9 @@ async function displayPersonalRanking() {
          if (elements.rankingButton) elements.rankingButton.addEventListener('click', async () => { 
             playSound('ui-click'); 
             if(isAuthReady) { 
-                await displayPersonalRanking(); // <-- Llama a la función renombrada
-                switchRankingTab('personal'); // <-- Pone la pestaña 'Personal' como activa
-       showScreen(elements.rankingScreen); 
+                await displayPersonalRanking();
+                switchRankingTab('personal');
+                showScreen(elements.rankingScreen); 
             } 
         });
 
@@ -1016,12 +1039,15 @@ async function displayPersonalRanking() {
         if (elements.rankingTabGlobal) elements.rankingTabGlobal.addEventListener('click', () => {
             playSound('ui-click');
             switchRankingTab('global');
-            // Aquí llamaremos a la función para mostrar el ranking global en el futuro
         });
         
-        if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { 
-        
-                if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if (isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
+        if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => {
+            playSound('ui-click'); 
+            if (isAuthReady) { 
+                switchFriendsTab('list'); 
+                showScreen(elements.friendsScreen); 
+            } 
+        });
 
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
 
@@ -1044,7 +1070,7 @@ async function displayPersonalRanking() {
         if (elements.showScoreCheckbox) elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
         if (elements.resetDataButton) elements.resetDataButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.remove('hidden'); });
         if (elements.cancelResetButton) elements.cancelResetButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.add('hidden'); });
-        if (elements.confirmResetButton) elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayRanking(); });
+        if (elements.confirmResetButton) elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayPersonalRanking(); });
         if (elements.saveProfileButton) elements.saveProfileButton.addEventListener('click', saveProfile);
         if (elements.friendsTabList) elements.friendsTabList.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('list'); });
         if (elements.friendsTabRequests) elements.friendsTabRequests.addEventListener('click', () => { playSound('ui-click'); switchFriendsTab('requests'); });
@@ -1074,8 +1100,4 @@ async function displayPersonalRanking() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
-
-
-
-
-
+}
