@@ -528,8 +528,8 @@ function mainApp() {
         let bonus = 0;
         if (score > 0) { // Solo hay bonus si el jugador ha puntuado
             if (currentGameMode === 'hidden') bonus = 5;
-            if (currentGameMode === 'pro') bonus = 10;
-            if (currentGameMode === 'fast') bonus = 10;
+            if (currentGameMode === 'pro') bonus = 3;
+            if (currentGameMode === 'fast') bonus = 2;
         }
         const finalScoreWithBonus = score + bonus;
         
@@ -1042,4 +1042,5 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
