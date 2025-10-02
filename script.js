@@ -1000,8 +1000,28 @@ async function displayPersonalRanking() {
             showScreen(elements.aboutScreen);
         });
 
-        if (elements.rankingButton) elements.rankingButton.addEventListener('click', async () => { playSound('ui-click'); if (isAuthReady) { await displayRanking(); showScreen(elements.rankingScreen); } });
-        if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if (isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
+         if (elements.rankingButton) elements.rankingButton.addEventListener('click', async () => { 
+            playSound('ui-click'); 
+            if(isAuthReady) { 
+                await displayPersonalRanking(); // <-- Llama a la función renombrada
+                switchRankingTab('personal'); // <-- Pone la pestaña 'Personal' como activa
+       showScreen(elements.rankingScreen); 
+            } 
+        });
+
+        if (elements.rankingTabPersonal) elements.rankingTabPersonal.addEventListener('click', () => {
+            playSound('ui-click');
+            switchRankingTab('personal');
+        });
+        if (elements.rankingTabGlobal) elements.rankingTabGlobal.addEventListener('click', () => {
+            playSound('ui-click');
+            switchRankingTab('global');
+            // Aquí llamaremos a la función para mostrar el ranking global en el futuro
+        });
+        
+        if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { 
+        
+                if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => { playSound('ui-click'); if (isAuthReady) { switchFriendsTab('list'); showScreen(elements.friendsScreen); } });
 
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
 
@@ -1054,6 +1074,7 @@ async function displayPersonalRanking() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
