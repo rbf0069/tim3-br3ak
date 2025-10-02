@@ -1100,4 +1100,3 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
-}
