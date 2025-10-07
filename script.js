@@ -630,7 +630,68 @@ function mainApp() {
             elements.personalRankingList.innerHTML = `<div class="text-red-500 text-center">No se pudo cargar el ranking.</div>`;
         }
     }
+    
+    async function displayGlobalRanking() {
+        elements.globalRankingList.innerHTML = `<div class="text-center text-gray-400 p-8">Cargando ranking mundial...</div>`;
 
+        try {
+            const getGlobalRanking = httpsCallable(functions, 'getGlobalRanking');
+            const result = await getGlobalRanking();
+            const { topScores, userRank } = result.data;
+
+            elements.globalRankingList.innerHTML = ''; // Limpia el mensaje de "Cargando"
+
+            if (!topScores || topScores.length === 0) {
+                elements.globalRankingList.innerHTML = `<div class="text-center text-gray-400 p-8">Aún no hay puntuaciones. ¡Sé el primero!</div>`;
+                return;
+            }
+
+            const medalIcons = ['icon-gold-medal', 'icon-silver-medal', 'icon-bronze-medal'];
+
+            topScores.forEach((entry, index) => {
+                const isCurrentUser = entry.userId === userId;
+                const rowClass = isCurrentUser ? 'bg-purple-900/50 border-2 border-purple-500' : 'bg-gray-800';
+                
+                let rankDisplay = `<span class="font-bold text-2xl w-12 text-center text-white">#${entry.rank}</span>`;
+                if (index < 3) {
+                    const medalSvg = getAvatarSvg(medalIcons[index]);
+                    rankDisplay = `<div class="w-12 h-12 flex items-center justify-center">${medalSvg.outerHTML}</div>`;
+                }
+
+                const listItem = `
+                    <div class="flex items-center justify-between p-2 rounded-lg ${rowClass}">
+                        ${rankDisplay}
+                        <div class="flex items-center space-x-3 flex-grow ml-4">
+                            <div class="w-10 h-10 p-1 bg-gray-900 rounded-full">${getAvatarSvg(entry.avatar).outerHTML}</div>
+                            <span class="font-semibold text-lg truncate">${entry.nickname}</span>
+                        </div>
+                        <span class="font-chrono text-2xl text-yellow-400 w-24 text-right">${entry.score}</span>
+                    </div>`;
+                elements.globalRankingList.innerHTML += listItem;
+            });
+
+            // Comprueba si el usuario está en el top 50
+            const userIsInTop50 = topScores.some(entry => entry.userId === userId);
+
+            if (userRank && !userIsInTop50 && userRank.rank > 50) {
+                 const userRow = `
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-purple-900/50 border-2 border-purple-500 mt-4">
+                        <span class="font-bold text-2xl w-12 text-center text-white">#${userRank.rank}</span>
+                        <div class="flex items-center space-x-3 flex-grow ml-4">
+                            <div class="w-10 h-10 p-1 bg-gray-900 rounded-full">${getAvatarSvg(userProfile.avatar).outerHTML}</div>
+                            <span class="font-semibold text-lg truncate">${userProfile.nickname}</span>
+                        </div>
+                        <span class="font-chrono text-2xl text-yellow-400 w-24 text-right">${userRank.score}</span>
+                    </div>`;
+                elements.globalRankingList.innerHTML += userRow;
+            }
+
+        } catch (error) {
+            console.error("Error al obtener el ranking global:", error);
+            elements.globalRankingList.innerHTML = `<div class="text-center text-red-500 p-8">No se pudo cargar el ranking mundial.</div>`;
+        }
+    }
+    
     function updateSettingsUI() {
         if (!elements.soundCheckbox) return;
         if (settings.sound) {
@@ -1036,9 +1097,11 @@ function mainApp() {
             playSound('ui-click');
             switchRankingTab('personal');
         });
-        if (elements.rankingTabGlobal) elements.rankingTabGlobal.addEventListener('click', () => {
+        
+       if (elements.rankingTabGlobal) elements.rankingTabGlobal.addEventListener('click', async () => { // <-- Convertido a async
             playSound('ui-click');
             switchRankingTab('global');
+            await displayGlobalRanking(); // <-- Llama a la nueva función
         });
         
         if (elements.friendsButton) elements.friendsButton.addEventListener('click', () => {
@@ -1100,3 +1163,4 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
