@@ -549,8 +549,9 @@ function mainApp() {
         await saveRanking(finalScoreWithBonus);
 
         // --- NUEVA LLAMADA A LA CLOUD FUNCTION ---
-        if (finalScoreWithBonus > 0) {
+        if (finalScoreWithBonus > 0 && auth.currentUser) { // <-- Verificamos que hay un usuario
             try {
+                await auth.currentUser.getIdToken(true); // <-- FORZAMOS LA ACTUALIZACIÓN DEL TOKEN
                 const submitScore = httpsCallable(functions, 'submitScore');
                 await submitScore({ score: finalScoreWithBonus });
                 console.log("Puntuación enviada al ranking global.");
@@ -635,9 +636,13 @@ function mainApp() {
         elements.globalRankingList.innerHTML = `<div class="text-center text-gray-400 p-8">Cargando ranking mundial...</div>`;
 
         try {
+            if (auth.currentUser) { // <-- Verificamos que hay un usuario
+                await auth.currentUser.getIdToken(true); // <-- FORZAMOS LA ACTUALIZACIÓN DEL TOKEN
+            }
             const getGlobalRanking = httpsCallable(functions, 'getGlobalRanking');
             const result = await getGlobalRanking();
             const { topScores, userRank } = result.data;
+            // ... resto de la función
 
             elements.globalRankingList.innerHTML = ''; // Limpia el mensaje de "Cargando"
 
@@ -1163,4 +1168,5 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
