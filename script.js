@@ -526,7 +526,6 @@ function mainApp() {
         playSound('game-over');
         vibrate([100, 50, 100]);
 
-        // --- LÓGICA DE BONUS ---
         let bonus = 0;
         if (score > 0) {
             if (currentGameMode === 'hidden') bonus = 5;
@@ -548,13 +547,25 @@ function mainApp() {
         }
         await saveRanking(finalScoreWithBonus);
 
-        // --- NUEVA LLAMADA A LA CLOUD FUNCTION ---
-        if (finalScoreWithBonus > 0 && auth.currentUser) { // <-- Verificamos que hay un usuario
+        // --- LLAMADA A LA FUNCIÓN CON FETCH ---
+        if (finalScoreWithBonus > 0 && auth.currentUser) {
             try {
-                await auth.currentUser.getIdToken(true); // <-- FORZAMOS LA ACTUALIZACIÓN DEL TOKEN
-                const submitScore = httpsCallable(functions, 'submitScore');
-                await submitScore({ score: finalScoreWithBonus });
+                const idToken = await auth.currentUser.getIdToken(true);
+                const url = 'https://us-central1-tim3-br3ak.cloudfunctions.net/submitScore';
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + idToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ score: finalScoreWithBonus })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.statusText}`);
+                }
                 console.log("Puntuación enviada al ranking global.");
+
             } catch (error) {
                 console.error("Error al enviar la puntuación global:", error);
             }
@@ -636,15 +647,28 @@ function mainApp() {
         elements.globalRankingList.innerHTML = `<div class="text-center text-gray-400 p-8">Cargando ranking mundial...</div>`;
 
         try {
-            if (auth.currentUser) { // <-- Verificamos que hay un usuario
-                await auth.currentUser.getIdToken(true); // <-- FORZAMOS LA ACTUALIZACIÓN DEL TOKEN
+            if (!auth.currentUser) {
+                throw new Error("Usuario no autenticado.");
             }
-            const getGlobalRanking = httpsCallable(functions, 'getGlobalRanking');
-            const result = await getGlobalRanking();
-            const { topScores, userRank } = result.data;
-            // ... resto de la función
+            const idToken = await auth.currentUser.getIdToken(true);
+            const url = 'https://us-central1-tim3-br3ak.cloudfunctions.net/getGlobalRanking';
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + idToken,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-            elements.globalRankingList.innerHTML = ''; // Limpia el mensaje de "Cargando"
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error.message || `Error del servidor: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            const { topScores, userRank } = result;
+
+            elements.globalRankingList.innerHTML = ''; 
 
             if (!topScores || topScores.length === 0) {
                 elements.globalRankingList.innerHTML = `<div class="text-center text-gray-400 p-8">Aún no hay puntuaciones. ¡Sé el primero!</div>`;
@@ -660,14 +684,15 @@ function mainApp() {
                 let rankDisplay = `<span class="font-bold text-2xl w-12 text-center text-white">#${entry.rank}</span>`;
                 if (index < 3) {
                     const medalSvg = getAvatarSvg(medalIcons[index]);
-                    rankDisplay = `<div class="w-12 h-12 flex items-center justify-center">${medalSvg.outerHTML}</div>`;
+                    if(medalSvg) rankDisplay = `<div class="w-12 h-12 flex items-center justify-center">${medalSvg.outerHTML}</div>`;
                 }
-
+                
+                const avatarSvg = getAvatarSvg(entry.avatar);
                 const listItem = `
                     <div class="flex items-center justify-between p-2 rounded-lg ${rowClass}">
                         ${rankDisplay}
                         <div class="flex items-center space-x-3 flex-grow ml-4">
-                            <div class="w-10 h-10 p-1 bg-gray-900 rounded-full">${getAvatarSvg(entry.avatar).outerHTML}</div>
+                            <div class="w-10 h-10 p-1 bg-gray-900 rounded-full">${avatarSvg ? avatarSvg.outerHTML : ''}</div>
                             <span class="font-semibold text-lg truncate">${entry.nickname}</span>
                         </div>
                         <span class="font-chrono text-2xl text-yellow-400 w-24 text-right">${entry.score}</span>
@@ -675,15 +700,15 @@ function mainApp() {
                 elements.globalRankingList.innerHTML += listItem;
             });
 
-            // Comprueba si el usuario está en el top 50
             const userIsInTop50 = topScores.some(entry => entry.userId === userId);
 
             if (userRank && !userIsInTop50 && userRank.rank > 50) {
+                 const userAvatarSvg = getAvatarSvg(userProfile.avatar);
                  const userRow = `
                     <div class="flex items-center justify-between p-2 rounded-lg bg-purple-900/50 border-2 border-purple-500 mt-4">
                         <span class="font-bold text-2xl w-12 text-center text-white">#${userRank.rank}</span>
                         <div class="flex items-center space-x-3 flex-grow ml-4">
-                            <div class="w-10 h-10 p-1 bg-gray-900 rounded-full">${getAvatarSvg(userProfile.avatar).outerHTML}</div>
+                            <div class="w-10 h-10 p-1 bg-gray-900 rounded-full">${userAvatarSvg ? userAvatarSvg.outerHTML : ''}</div>
                             <span class="font-semibold text-lg truncate">${userProfile.nickname}</span>
                         </div>
                         <span class="font-chrono text-2xl text-yellow-400 w-24 text-right">${userRank.score}</span>
@@ -1168,5 +1193,6 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
