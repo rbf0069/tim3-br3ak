@@ -494,7 +494,7 @@ function mainApp() {
         setTimeout(() => elements.scoreFeedback.classList.remove('show'), 800);
     }
 
-    function calculateScore() {
+function calculateScore() {
         const seconds = Math.floor(elapsedTime / 1000);
         const decimals = Math.floor((elapsedTime % 1000) / 10);
         let pointsThisTurn = 0,
@@ -504,27 +504,30 @@ function mainApp() {
         const isCapicua = decStr[0] === decStr[1];
         const isDecena = decStr[1] === '0';
         const secondMatchesDecimal = lastSecondDigit === decStr[0];
+
         if (seconds > 0 && isCapicua && secondMatchesDecimal) {
             pointsThisTurn = 5;
             feedbackText = '¡HIT! +5';
-            sessionStats.hits++;
             playSound('score-hit');
+            sessionStats.hits++; // Correcto para el HIT
         } else if (seconds > 0 && isDecena && secondMatchesDecimal) {
             pointsThisTurn = 3;
             feedbackText = '+3';
-            sessionStats.capicuas++;
             playSound('score-point');
+            // Aquí no se cuenta nada específico, es una jugada de +3
         } else if (isCapicua) {
             pointsThisTurn = 2;
             feedbackText = '+2';
             playSound('score-point');
+            sessionStats.capicuas++; // CORREGIDO: Ahora se cuenta en la jugada de +2
         } else if (isDecena) {
             pointsThisTurn = 1;
             feedbackText = '+1';
             playSound('score-point');
         }
+        
         score += pointsThisTurn;
-        sessionStats.score = score;
+        sessionStats.score = score; // Correcto
         elements.currentScoreDisplay.textContent = score;
         if (pointsThisTurn > 0) showScoreFeedback(feedbackText);
     }
@@ -1223,6 +1226,7 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
