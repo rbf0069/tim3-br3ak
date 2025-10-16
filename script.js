@@ -595,6 +595,7 @@ function calculateScore() {
                     body: JSON.stringify({ 
                         gameMode: currentGameMode,
                         stats: sessionStats 
+                        duration: elapsedTime
                     })
                 });
 
@@ -1231,6 +1232,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
