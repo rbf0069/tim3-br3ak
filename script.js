@@ -133,6 +133,8 @@ function mainApp() {
     let currentGameMode = 'classic';
     let currentGameDuration = 10000;
     let gameSpeedMultiplier = 1;
+    let userMilestones = {}; // Para el progreso a largo plazo
+    let sessionStats = {};   // Para las estadísticas de la partida actual
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
 
@@ -206,9 +208,11 @@ function mainApp() {
                 bestScoreToday = (data.bestScore && data.bestScore.date === today) ? data.bestScore.score : 0;
                 settings = data.settings || { sound: true, vibration: true, showScore: true };
                 userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' };
+                userMilestones = data.milestones || { totalScore: 0, gamesPlayed: 0, totalHits: 0, totalCapicuas: 0 }; 
                 selectedAvatar = userProfile.avatar;
             } else {
                 userProfile = { nickname: '', avatar: 'avatar-circle' };
+                userMilestones = { totalScore: 0, gamesPlayed: 0, totalHits: 0, totalCapicuas: 0 };
                 selectedAvatar = 'avatar-circle';
             }
         } catch (error) {
@@ -390,6 +394,11 @@ function mainApp() {
         timeWhenStopped = 0;
         if (intervalId) clearInterval(intervalId);
         if (hardStopTimer) clearTimeout(hardStopTimer);
+        sessionStats = {
+        score: 0,
+        hits: 0,
+        capicuas: 0
+         };
         updateChronometerDisplay();
         setupAttemptsIndicator();
         elements.currentScoreDisplay.textContent = 0;
@@ -498,10 +507,12 @@ function mainApp() {
         if (seconds > 0 && isCapicua && secondMatchesDecimal) {
             pointsThisTurn = 5;
             feedbackText = '¡HIT! +5';
+            sessionStats.hits++;
             playSound('score-hit');
         } else if (seconds > 0 && isDecena && secondMatchesDecimal) {
             pointsThisTurn = 3;
             feedbackText = '+3';
+            sessionStats.capicuas++;
             playSound('score-point');
         } else if (isCapicua) {
             pointsThisTurn = 2;
@@ -513,10 +524,21 @@ function mainApp() {
             playSound('score-point');
         }
         score += pointsThisTurn;
+        sessionStats.score = score;
         elements.currentScoreDisplay.textContent = score;
         if (pointsThisTurn > 0) showScoreFeedback(feedbackText);
     }
 
+    async function saveMilestones() {
+        if (!isAuthReady) return;
+        const userDocRef = doc(db, "users", userId);
+        try {
+            await setDoc(userDocRef, { milestones: userMilestones }, { merge: true });
+        } catch (error) {
+            console.error("Error saving milestones:", error);
+        }
+    }
+    
     async function endGame(reason) {
         if (gameState === 'finished') return;
         gameState = 'finished';
@@ -533,6 +555,14 @@ function mainApp() {
             if (currentGameMode === 'fast') bonus = 2;
         }
         const finalScoreWithBonus = score + bonus;
+
+        // Actualizar los hitos del jugador con las estadísticas de la sesión
+        userMilestones.gamesPlayed = (userMilestones.gamesPlayed || 0) + 1;
+        userMilestones.totalScore = (userMilestones.totalScore || 0) + finalScoreWithBonus;
+        userMilestones.totalHits = (userMilestones.totalHits || 0) + sessionStats.hits;
+        userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;
+        await saveMilestones(); // ¡Guardamos el progreso en la nube!
+        // --- FIN DEL BLOQUE ---
 
         if (bonus > 0) {
             elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
@@ -1193,6 +1223,7 @@ function mainApp() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
