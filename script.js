@@ -594,7 +594,7 @@ function calculateScore() {
                     // ENVIAMOS LA EVIDENCIA, NO SOLO EL RESULTADO
                     body: JSON.stringify({ 
                         gameMode: currentGameMode,
-                        stats: sessionStats 
+                        stats: sessionStats, 
                         duration: elapsedTime
                     })
                 });
@@ -1232,6 +1232,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
