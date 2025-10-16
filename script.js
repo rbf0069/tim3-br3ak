@@ -591,15 +591,20 @@ function calculateScore() {
                         'Authorization': 'Bearer ' + idToken,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ score: finalScoreWithBonus })
+                    // ENVIAMOS LA EVIDENCIA, NO SOLO EL RESULTADO
+                    body: JSON.stringify({ 
+                        gameMode: currentGameMode,
+                        stats: sessionStats 
+                    })
                 });
 
                 if (!response.ok) {
                     throw new Error(`Error del servidor: ${response.statusText}`);
                 }
-                console.log("Puntuación enviada al ranking global.");
+                console.log("Puntuación verificada y enviada al ranking global.");
 
-            } catch (error) {
+            } catch (error)
+{
                 console.error("Error al enviar la puntuación global:", error);
             }
         }
@@ -1226,6 +1231,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
