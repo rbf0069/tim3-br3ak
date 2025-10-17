@@ -136,7 +136,66 @@ function mainApp() {
     let userMilestones = {}; // Para el progreso a largo plazo
     let sessionStats = {};   // Para las estadísticas de la partida actual
 
+    // --- CATÁLOGO DE LOGROS Y MEDALLAS ---
+    const MEDAL_CONFIG = {
+        'habilidad_primer_3': {
+            name: "Primeros Pasos",
+            description: "Consigue tu primer +3.",
+            milestone: 'totalThreePointers',
+            levels: { bronze: 1 }
+        },
+        'habilidad_primer_hit': {
+            name: "¡Bautismo de Fuego!",
+            description: "Consigue tu primer ¡HIT! (+5).",
+            milestone: 'totalHits',
+            levels: { bronze: 1 }
+        },
+        'habilidad_primer_capicua': {
+            name: "Doble o Nada",
+            description: "Consigue tu primer Capicúa (+2).",
+            milestone: 'totalCapicuas',
+            levels: { bronze: 1 }
+        }
+    };
+
     // --- 3. DEFINICIONES DE FUNCIONES ---
+
+    function showMedalUnlockedPopup(medalName) {
+        // Alerta temporal para probar la funcionalidad.
+        alert(`¡MEDALLA DESBLOQUEADA!\n\n${medalName}`);
+    }
+
+    async function checkAndUnlockMedals() {
+        let newMedalsUnlocked = false;
+        
+        // Aseguramos que el objeto para guardar medallas exista
+        if (!userMilestones.unlockedMedals) {
+            userMilestones.unlockedMedals = {};
+        }
+
+        for (const medalId in MEDAL_CONFIG) {
+            const config = MEDAL_CONFIG[medalId];
+            const playerProgress = userMilestones[config.milestone] || 0;
+            
+            // Por ahora, solo comprobamos el nivel "bronze"
+            const requirement = config.levels.bronze;
+            const medalKey = `${medalId}_bronze`;
+
+            // Si el jugador cumple el requisito Y AÚN NO tiene la medalla...
+            if (playerProgress >= requirement && !userMilestones.unlockedMedals[medalKey]) {
+                userMilestones.unlockedMedals[medalKey] = true; // Desbloqueamos la medalla
+                newMedalsUnlocked = true;
+                showMedalUnlockedPopup(config.name);
+                // NOTA: Usamos await aquí para que las alertas no se solapen si se desbloquean varias a la vez
+                await new Promise(resolve => setTimeout(resolve, 100)); 
+            }
+        }
+
+        // Si hemos desbloqueado algo, actualizamos los datos en la nube
+        if (newMedalsUnlocked) {
+            await saveMilestones();
+        }
+    }
 
     function preloadAudio() {
         const soundFiles = ['ui-click', 'start-game', 'stop-button', 'score-point', 'score-hit', 'game-over', 'new-best-score'];
@@ -208,11 +267,11 @@ function mainApp() {
                 bestScoreToday = (data.bestScore && data.bestScore.date === today) ? data.bestScore.score : 0;
                 settings = data.settings || { sound: true, vibration: true, showScore: true };
                 userProfile = data.profile || { nickname: '', avatar: 'avatar-circle' };
-                userMilestones = data.milestones || { totalScore: 0, gamesPlayed: 0, totalHits: 0, totalCapicuas: 0 }; 
+                userMilestones = data.milestones || { totalScore: 0, gamesPlayed: 0, totalHits: 0, totalCapicuas: 0, totalThreePointers: 0 };
                 selectedAvatar = userProfile.avatar;
             } else {
                 userProfile = { nickname: '', avatar: 'avatar-circle' };
-                userMilestones = { totalScore: 0, gamesPlayed: 0, totalHits: 0, totalCapicuas: 0 };
+                userMilestones = { totalScore: 0, gamesPlayed: 0, totalHits: 0, totalCapicuas: 0, totalThreePointers: 0 };
                 selectedAvatar = 'avatar-circle';
             }
         } catch (error) {
@@ -397,7 +456,8 @@ function mainApp() {
         sessionStats = {
         score: 0,
         hits: 0,
-        capicuas: 0
+        capicuas: 0,
+        threePointers: 0
          };
         updateChronometerDisplay();
         setupAttemptsIndicator();
@@ -514,6 +574,7 @@ function calculateScore() {
             pointsThisTurn = 3;
             feedbackText = '+3';
             playSound('score-point');
+            sessionStats.threePointers++;
             // Aquí no se cuenta nada específico, es una jugada de +3
         } else if (isCapicua) {
             pointsThisTurn = 2;
@@ -563,9 +624,10 @@ function calculateScore() {
         userMilestones.gamesPlayed = (userMilestones.gamesPlayed || 0) + 1;
         userMilestones.totalScore = (userMilestones.totalScore || 0) + finalScoreWithBonus;
         userMilestones.totalHits = (userMilestones.totalHits || 0) + sessionStats.hits;
-        userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;
+        userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;
+        userMilestones.totalThreePointers = (userMilestones.totalThreePointers || 0) + sessionStats.threePointers; // AÑADE ESTA LÍNEA
         await saveMilestones(); // ¡Guardamos el progreso en la nube!
-        // --- FIN DEL BLOQUE ---
+         await checkAndUnlockMedals();
 
         if (bonus > 0) {
             elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
@@ -1232,6 +1294,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
