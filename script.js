@@ -412,24 +412,29 @@ function mainApp() {
     }
 
     function updateProfileButton() {
-        if (!elements.profileDisplay) return;
-        elements.profileDisplay.innerHTML = '';
+        if (!elements.profileButton) return;
+        elements.profileButton.innerHTML = ''; // Limpiamos el botón
         if (userProfile.nickname) {
-            const avatarContainer = document.createElement('div');
-            avatarContainer.className = 'w-6 h-6';
-            const avatar = getAvatarSvg(userProfile.avatar);
-            if (avatar) {
-                avatarContainer.appendChild(avatar);
-            }
-            elements.profileDisplay.appendChild(avatarContainer);
-
-            const nickEl = document.createElement('span');
-            nickEl.textContent = userProfile.nickname;
-            elements.profileDisplay.appendChild(nickEl);
-        } else {
-            elements.profileDisplay.textContent = `Player ID: ${userId || 'Cargando...'}`;
+        const avatarContainer = document.createElement('div');
+        avatarContainer.className = 'w-8 h-8'; // Un poco más grande para el botón
+        const avatar = getAvatarSvg(userProfile.avatar);
+        if (avatar) {
+            avatarContainer.appendChild(avatar);
         }
+        elements.profileButton.appendChild(avatarContainer);
+
+        const nickEl = document.createElement('span');
+        nickEl.className = 'text-lg font-semibold text-gray-300';
+        nickEl.textContent = userProfile.nickname;
+        elements.profileButton.appendChild(nickEl);
+    } else {
+        // Texto provisional si no hay perfil
+        const placeholderText = document.createElement('span');
+        placeholderText.className = 'text-gray-400';
+        placeholderText.textContent = `Crea tu Perfil`;
+        elements.profileButton.appendChild(placeholderText);
     }
+}
 
     function updateProfileUI() {
         if (!elements.currentAvatarDisplay || !elements.avatarGallery) return;
@@ -1307,6 +1312,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
