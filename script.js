@@ -72,7 +72,6 @@ function mainApp() {
         globalRankingList: document.getElementById('global-ranking-list'),
         rankingTabPersonal: document.getElementById('ranking-tab-personal'),
         rankingTabGlobal: document.getElementById('ranking-tab-global'),
-        profileDisplay: document.getElementById('profile-display'),
         resetDataButton: document.getElementById('reset-data-button'),
         soundCheckbox: document.getElementById('sound-checkbox'),
         soundCheckmark: document.getElementById('sound-checkmark'),
@@ -1312,6 +1311,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
