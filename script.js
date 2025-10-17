@@ -621,13 +621,13 @@ function calculateScore() {
         const finalScoreWithBonus = score + bonus;
 
         // Actualizar los hitos del jugador con las estadísticas de la sesión
-        userMilestones.gamesPlayed = (userMilestones.gamesPlayed || 0) + 1;
-        userMilestones.totalScore = (userMilestones.totalScore || 0) + finalScoreWithBonus;
-        userMilestones.totalHits = (userMilestones.totalHits || 0) + sessionStats.hits;
-        userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;
-        userMilestones.totalThreePointers = (userMilestones.totalThreePointers || 0) + sessionStats.threePointers; // AÑADE ESTA LÍNEA
+            userMilestones.gamesPlayed = (userMilestones.gamesPlayed || 0) + 1;
+            userMilestones.totalScore = (userMilestones.totalScore || 0) + finalScoreWithBonus;
+            userMilestones.totalHits = (userMilestones.totalHits || 0) + sessionStats.hits;
+            userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;
+            userMilestones.totalThreePointers = (userMilestones.totalThreePointers || 0) + sessionStats.threePointers; 
         await saveMilestones(); // ¡Guardamos el progreso en la nube!
-         await checkAndUnlockMedals();
+        await checkAndUnlockMedals();
 
         if (bonus > 0) {
             elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
@@ -1294,6 +1294,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
