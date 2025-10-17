@@ -1259,6 +1259,7 @@ function calculateScore() {
             showScreen(elements.profileScreen);
         }
     });
+  }
 
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
 
@@ -1311,6 +1312,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
