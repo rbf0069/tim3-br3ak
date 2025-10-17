@@ -114,6 +114,7 @@ function mainApp() {
         deleteNicknameInput: document.getElementById('delete-nickname-input'),
         deleteNicknameButton: document.getElementById('delete-nickname-button'),
         deleteFeedback: document.getElementById('delete-feedback'),
+        profileButton: document.getElementById('profile-button'),
     };
 
     // --- 2. VARIABLES DE ESTADO ---
@@ -322,7 +323,7 @@ function mainApp() {
                 transaction.set(nicknameDocRef, { nicknameLower: newNicknameLower, userId: userId, avatar: selectedAvatar, nickname: newNickname });
             });
             userProfile = { nickname: newNickname, avatar: selectedAvatar };
-            updateProfileDisplay();
+            updateProfileButton();
             feedbackEl.textContent = "¡Perfil guardado!";
             feedbackEl.className = "text-center text-sm mt-2 h-4 text-green-500";
             playSound('ui-click');
@@ -410,7 +411,7 @@ function mainApp() {
         return svgClone;
     }
 
-    function updateProfileDisplay() {
+    function updateProfileButton() {
         if (!elements.profileDisplay) return;
         elements.profileDisplay.innerHTML = '';
         if (userProfile.nickname) {
@@ -1148,7 +1149,7 @@ function calculateScore() {
                 if (user) {
                     userId = user.uid;
                     await loadUserData();
-                    updateProfileDisplay();
+                    updateProfileButton();
                     listenToFriendRequests();
                     listenToFriends();
                     isAuthReady = true;
@@ -1243,6 +1244,18 @@ function calculateScore() {
             } 
         });
 
+        if (elements.profileButton) {
+            elements.profileButton.addEventListener('click', () => {
+        playSound('ui-click');
+        if (isAuthReady) {
+            // Preparamos la pantalla de perfil antes de mostrarla
+            elements.nicknameInput.value = userProfile.nickname;
+            selectedAvatar = userProfile.avatar;
+            updateProfileUI(); 
+            showScreen(elements.profileScreen);
+        }
+    });
+
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
 
         if (elements.editProfileButton) elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if (isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
@@ -1294,6 +1307,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
