@@ -59,7 +59,6 @@ function mainApp() {
         infoNavHowToPlayButton: document.getElementById('info-nav-how-to-play-button'),
         infoNavAboutButton: document.getElementById('info-nav-about-button'),
         backToMainButtons: document.querySelectorAll('[id^="back-to-main-"]'),
-        editProfileButton: document.getElementById('edit-profile-button'),
         backToSettingsFromProfileButton: document.getElementById('back-to-settings-from-profile-button'),
         exitButton: document.getElementById('exit-button'),
         chronometerDisplay: document.getElementById('chronometer'),
@@ -1262,9 +1261,7 @@ function calculateScore() {
   }
 
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
-
-        if (elements.editProfileButton) elements.editProfileButton.addEventListener('click', () => { playSound('ui-click'); if (isAuthReady) { elements.nicknameInput.value = userProfile.nickname; selectedAvatar = userProfile.avatar; updateProfileUI(); showScreen(elements.profileScreen) } });
-        if (elements.backToSettingsFromProfileButton) elements.backToSettingsFromProfileButton.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.settingsScreen); });
+        document.getElementById('back-to-main-from-profile').addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); });
 
         if (elements.actionButton) elements.actionButton.addEventListener('click', handleActionClick);
         if (elements.exitButton) elements.exitButton.addEventListener('click', () => { playSound('ui-click'); if (gameState === 'running' || gameState === 'stopped') { clearInterval(intervalId); clearTimeout(hardStopTimer); } elements.exitPopup.classList.remove('hidden'); });
@@ -1279,7 +1276,7 @@ function calculateScore() {
         if (elements.mainMenuButton) elements.mainMenuButton.addEventListener('click', () => { playSound('ui-click'); elements.endGamePopup.classList.add('hidden'); showScreen(elements.mainScreen); });
         if (elements.soundCheckbox) elements.soundCheckbox.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateSettingsUI(); });
         if (elements.vibrationCheckbox) elements.vibrationCheckbox.addEventListener('click', () => { settings.vibration = !settings.vibration; saveSettings(); updateSettingsUI(); });
-        if (elements.showScoreCheckbox) elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updateSettingsUI(); });
+        if (elements.showScoreCheckbox) elements.showScoreCheckbox.addEventListener('click', () => { settings.showScore = !settings.showScore; saveSettings(); updatSettingsUI(); });
         if (elements.resetDataButton) elements.resetDataButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.remove('hidden'); });
         if (elements.cancelResetButton) elements.cancelResetButton.addEventListener('click', () => { playSound('ui-click'); elements.resetDataPopup.classList.add('hidden'); });
         if (elements.confirmResetButton) elements.confirmResetButton.addEventListener('click', async () => { await resetAllData(); elements.resetDataPopup.classList.add('hidden'); await displayPersonalRanking(); });
@@ -1312,6 +1309,7 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
