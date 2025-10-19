@@ -59,7 +59,6 @@ function mainApp() {
         infoNavHowToPlayButton: document.getElementById('info-nav-how-to-play-button'),
         infoNavAboutButton: document.getElementById('info-nav-about-button'),
         backToMainButtons: document.querySelectorAll('[id^="back-to-main-"]'),
-        backToSettingsFromProfileButton: document.getElementById('back-to-settings-from-profile-button'),
         exitButton: document.getElementById('exit-button'),
         chronometerDisplay: document.getElementById('chronometer'),
         attemptsIndicator: document.getElementById('attempts-indicator'),
@@ -1309,18 +1308,4 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
