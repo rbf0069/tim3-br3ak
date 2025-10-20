@@ -112,6 +112,11 @@ function mainApp() {
         deleteNicknameButton: document.getElementById('delete-nickname-button'),
         deleteFeedback: document.getElementById('delete-feedback'),
         profileButton: document.getElementById('profile-button'),
+        profileTabEdit: document.getElementById('profile-tab-edit'),
+        profileTabMedals: document.getElementById('profile-tab-medals'),
+        profileEditContainer: document.getElementById('profile-edit-container'),
+        profileMedalsContainer: document.getElementById('profile-medals-container'),
+        medalGalleryContainer: document.getElementById('medal-gallery-container'),
     };
 
     // --- 2. VARIABLES DE ESTADO ---
@@ -1125,6 +1130,62 @@ function calculateScore() {
             setTimeout(() => { elements.deleteFeedback.textContent = ""; }, 3000);
         }
     }
+function switchProfileTab(activeTab) {
+    if (activeTab === 'edit') {
+        // Activa la pestaña Editar
+        elements.profileTabEdit.classList.add('text-white', 'border-purple-500');
+        elements.profileTabEdit.classList.remove('text-gray-400', 'border-transparent');
+        elements.profileEditContainer.classList.remove('hidden');
+
+        // Desactiva la pestaña Medallas
+        elements.profileTabMedals.classList.add('text-gray-400', 'border-transparent');
+        elements.profileTabMedals.classList.remove('text-white', 'border-purple-500');
+        elements.profileMedalsContainer.classList.add('hidden');
+    } else { // 'medals'
+        // Activa la pestaña Medallas
+        elements.profileTabMedals.classList.add('text-white', 'border-purple-500');
+        elements.profileTabMedals.classList.remove('text-gray-400', 'border-transparent');
+        elements.profileMedalsContainer.classList.remove('hidden');
+
+        // Desactiva la pestaña Editar
+        elements.profileTabEdit.classList.add('text-gray-400', 'border-transparent');
+        elements.profileTabEdit.classList.remove('text-white', 'border-purple-500');
+        elements.profileEditContainer.classList.add('hidden');
+    }
+}
+
+function renderMedalGallery() {
+    if (!elements.medalGalleryContainer) return;
+    elements.medalGalleryContainer.innerHTML = ''; // Limpiamos la galería
+
+    // Recorremos nuestro catálogo de medallas
+    for (const medalId in MEDAL_CONFIG) {
+        const config = MEDAL_CONFIG[medalId];
+        
+        // Creamos el contenedor de la medalla
+        const medalItem = document.createElement('div');
+        medalItem.className = 'medal-item'; // Clase base que ya definimos
+
+        // Reutilizamos un icono de avatar como medalla (ej. 'avatar-star')
+        // Puedes cambiar 'avatar-star' por el icono que quieras para cada medalla
+        const medalIcon = getAvatarSvg('avatar-star'); 
+
+        // Comprobamos si el jugador ha desbloqueado esta medalla
+        const medalKey = `${medalId}_bronze`;
+        if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
+            // Desbloqueada: aplicamos el color bronce
+            medalItem.classList.add('medal-bronze');
+        } else {
+            // Bloqueada: aplicamos el color gris
+            medalItem.classList.add('medal-locked');
+        }
+
+        if (medalIcon) {
+            medalItem.appendChild(medalIcon);
+        }
+        elements.medalGalleryContainer.appendChild(medalItem);
+    }
+}
 
     // --- 4. LÓGICA DE ARRANQUE ---
     async function startApp() {
@@ -1246,6 +1307,21 @@ function calculateScore() {
             } 
         });
 
+        if (elements.profileTabEdit) {
+        elements.profileTabEdit.addEventListener('click', () => {
+            playSound('ui-click');
+            switchProfileTab('edit');
+            });
+        }
+
+        if (elements.profileTabMedals) {
+        elements.profileTabMedals.addEventListener('click', () => {
+            playSound('ui-click');
+            renderMedalGallery(); // Dibujamos la galería CADA VEZ que se pulsa
+            switchProfileTab('medals');
+            });
+        }
+        
         if (elements.profileButton) {
             elements.profileButton.addEventListener('click', () => {
         playSound('ui-click');
@@ -1255,9 +1331,9 @@ function calculateScore() {
             selectedAvatar = userProfile.avatar;
             updateProfileUI(); 
             showScreen(elements.profileScreen);
-        }
-    });
-  }
+            }
+        });
+      }
 
         elements.backToMainButtons.forEach(button => button.addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); }));
         document.getElementById('back-to-main-from-profile').addEventListener('click', () => { playSound('ui-click'); showScreen(elements.mainScreen); });
@@ -1308,4 +1384,5 @@ function calculateScore() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
