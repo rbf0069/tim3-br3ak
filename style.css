@@ -103,3 +103,26 @@ body {
 .icon-button:active {
     transform: scale(0.9);
 }
+
+/* --- ESTILOS DE LA GALERÍA DE MEDALLAS --- */
+
+.medal-item {
+    @apply w-full h-full p-2 rounded-lg flex items-center justify-center;
+    aspect-ratio: 1 / 1; /* Asegura que sean cuadrados perfectos */
+}
+
+/* Color para una medalla BLOQUEADA */
+.medal-locked {
+    @apply bg-gray-900 text-gray-700 opacity-60;
+}
+
+/* Colores para medallas DESBLOQUEADAS */
+.medal-bronze {
+    @apply bg-yellow-900/50 text-yellow-600;
+}
+.medal-silver {
+    @apply bg-gray-600/50 text-gray-300;
+}
+.medal-gold {
+    @apply bg-yellow-700/50 text-yellow-400;
+}
