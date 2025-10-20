@@ -620,35 +620,42 @@ function calculateScore() {
         playSound('game-over');
         vibrate([100, 50, 100]);
 
-        let bonus = 0;
-        if (score > 0) {
-            if (currentGameMode === 'hidden') bonus = 5;
-            if (currentGameMode === 'pro') bonus = 3;
-            if (currentGameMode === 'fast') bonus = 2;
-        }
-        const finalScoreWithBonus = score + bonus;
+    // 1. Blindamos el 'score' para asegurar que es un número
+    const finalSessionScore = isNaN(score) ? 0 : score;
 
-        // Actualizar los hitos del jugador con las estadísticas de la sesión
-            userMilestones.gamesPlayed = (userMilestones.gamesPlayed || 0) + 1;
-            userMilestones.totalScore = (userMilestones.totalScore || 0) + finalScoreWithBonus;
-            userMilestones.totalHits = (userMilestones.totalHits || 0) + sessionStats.hits;
-            userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + sessionStats.capicuas;
-            userMilestones.totalThreePointers = (userMilestones.totalThreePointers || 0) + sessionStats.threePointers; 
-        await saveMilestones(); // ¡Guardamos el progreso en la nube!
-        await checkAndUnlockMedals();
+    // 2. Calculamos el bonus de forma segura
+    let bonus = 0;
+    if (finalSessionScore > 0) {
+    if (currentGameMode === 'hidden') bonus = 5;
+    if (currentGameMode === 'pro') bonus = 3;
+    if (currentGameMode === 'fast') bonus = 2;
+}
+    const finalScoreWithBonus = finalSessionScore + bonus;
 
-        if (bonus > 0) {
-            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${score} + ${bonus} Bonus)</span>`;
-        } else {
-            elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${score}</span>`;
-        }
+    // 3. Actualizamos los hitos con datos 100% seguros
+    userMilestones.gamesPlayed = (userMilestones.gamesPlayed || 0) + 1;
+    userMilestones.totalScore = (userMilestones.totalScore || 0) + finalScoreWithBonus;
+    userMilestones.totalHits = (userMilestones.totalHits || 0) + (sessionStats.hits || 0);
+    userMilestones.totalCapicuas = (userMilestones.totalCapicuas || 0) + (sessionStats.capicuas || 0);
+    userMilestones.totalThreePointers = (userMilestones.totalThreePointers || 0) + (sessionStats.threePointers || 0);
 
-        if (finalScoreWithBonus > bestScoreToday) {
-            bestScoreToday = finalScoreWithBonus;
-            elements.bestScoreDisplay.textContent = bestScoreToday;
-            await saveBestScore(finalScoreWithBonus);
-        }
-        await saveRanking(finalScoreWithBonus);
+    await saveMilestones(); // ¡Guardamos el progreso en la nube!
+    await checkAndUnlockMedals(); // Ahora esta línea SÍ se ejecutará
+
+    // 4. Mostramos el resultado en la UI
+    if (bonus > 0) {
+    elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalScoreWithBonus}</span> <span class="text-base text-cyan-400">(${finalSessionScore} + ${bonus} Bonus)</span>`;
+} else {
+    elements.finalScoreText.innerHTML = `Tu puntuación: <span class="font-bold text-white">${finalSessionScore}</span>`;
+}
+
+    // 5. Guardamos el mejor score y llamamos al ranking
+    if (finalScoreWithBonus > bestScoreToday) {
+    bestScoreToday = finalScoreWithBonus;
+    elements.bestScoreDisplay.textContent = bestScoreToday;
+    await saveBestScore(finalScoreWithBonus);
+}
+    await saveRanking(finalScoreWithBonus);
 
         // --- LLAMADA A LA FUNCIÓN CON FETCH ---
         if (finalScoreWithBonus > 0 && auth.currentUser) {
@@ -1384,5 +1391,6 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
