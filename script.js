@@ -1165,31 +1165,36 @@ function switchProfileTab(activeTab) {
 }
 
 function renderMedalGallery() {
-        if (!elements.medalGalleryContainer) return;
-        elements.medalGalleryContainer.innerHTML = ''; // Limpiamos la galería
+    if (!elements.medalGalleryContainer) return;
+    elements.medalGalleryContainer.innerHTML = ''; // Limpiamos la galería
 
-        for (const medalId in MEDAL_CONFIG) {
-            const config = MEDAL_CONFIG[medalId];
-            
-            const medalItem = document.createElement('div');
-            medalItem.className = 'medal-item'; 
+    for (const medalId in MEDAL_CONFIG) {
+        const config = MEDAL_CONFIG[medalId];
+        
+        // Creamos el contenedor
+        const medalItem = document.createElement('div');
+        medalItem.className = 'medal-item'; // Clase base del contenedor (fondo, padding)
 
-            // MEJORA: Usamos el icono específico de la medalla
-            const medalIcon = getAvatarSvg(config.icon); 
+        // Obtenemos el icono
+        const medalIcon = getAvatarSvg(config.icon);
+        if (!medalIcon) continue; // Si el icono no existe, saltamos
 
-            const medalKey = `${medalId}_bronze`;
-            if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
-                medalItem.classList.add('medal-bronze');
-            } else {
-                medalItem.classList.add('medal-locked');
-            }
-
-            if (medalIcon) {
-                medalItem.appendChild(medalIcon);
-            }
-            elements.medalGalleryContainer.appendChild(medalItem);
+        // --- ESTA ES LA LÓGICA CORREGIDA ---
+        const medalKey = `${medalId}_bronze`;
+        if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
+            // DESBLOQUEADA: Aplicamos el color bronce AL CONTENEDOR
+            medalItem.classList.add('medal-bronze');
+            // La línea que forzaba el color en el icono (y causaba el bug) HA SIDO ELIMINADA.
+        } else {
+            // BLOQUEADA: Aplicamos el color gris AL CONTENEDOR
+            medalItem.classList.add('medal-locked');
+            // La línea que forzaba el color en el icono (y causaba el bug) HA SIDO ELIMINADA.
         }
+        
+        medalItem.appendChild(medalIcon);
+        elements.medalGalleryContainer.appendChild(medalItem);
     }
+}
 
     // --- 4. LÓGICA DE ARRANQUE ---
     async function startApp() {
@@ -1388,6 +1393,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
