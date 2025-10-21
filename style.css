@@ -140,3 +140,13 @@ body {
 .medal-gold svg {
     stroke: #FACC15; /* Este es el color text-yellow-400 */
 }
+/* --- ESTILOS POPUP DETALLE MEDALLA --- */
+#medal-detail-popup {
+    backdrop-filter: blur(5px); /* Efecto desenfocado opcional */
+}
+
+/* Asegura que el icono dentro del popup tenga el color correcto */
+#medal-popup-icon svg {
+    width: 100%;
+    height: 100%;
+}
