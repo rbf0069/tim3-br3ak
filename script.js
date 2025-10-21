@@ -117,6 +117,12 @@ function mainApp() {
         profileEditContainer: document.getElementById('profile-edit-container'),
         profileMedalsContainer: document.getElementById('profile-medals-container'),
         medalGalleryContainer: document.getElementById('medal-gallery-container'),
+        medalDetailPopup: document.getElementById('medal-detail-popup'),
+        closeMedalPopup: document.getElementById('close-medal-popup'),
+        medalPopupIcon: document.getElementById('medal-popup-icon'),
+        medalPopupName: document.getElementById('medal-popup-name'),
+        medalPopupDescription: document.getElementById('medal-popup-description'),
+        medalPopupStatus: document.getElementById('medal-popup-status'),
     };
 
     // --- 2. VARIABLES DE ESTADO ---
@@ -165,6 +171,42 @@ const MEDAL_CONFIG = {
     };
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
+
+    function showMedalDetails(medalId) {
+    const config = MEDAL_CONFIG[medalId];
+    if (!config || !elements.medalDetailPopup) return;
+
+    // Limpiamos el icono anterior
+    elements.medalPopupIcon.innerHTML = ''; 
+    const medalIcon = getAvatarSvg(config.icon);
+
+    // Comprobamos el estado
+    const medalKey = `${medalId}_bronze`;
+    const isUnlocked = userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey];
+
+    // Coloreamos el icono del popup
+    if (isUnlocked) {
+        medalIcon.classList.add('text-yellow-600'); // Color bronce
+        elements.medalPopupStatus.textContent = "¡CONSEGUIDA!";
+        elements.medalPopupStatus.className = "mt-4 text-lg font-semibold text-yellow-400";
+    } else {
+        medalIcon.classList.add('text-gray-700'); // Color bloqueado
+        elements.medalPopupStatus.textContent = "BLOQUEADA";
+        elements.medalPopupStatus.className = "mt-4 text-lg font-semibold text-gray-500";
+    }
+
+    if (medalIcon) {
+        elements.medalPopupIcon.appendChild(medalIcon);
+    }
+
+    // Rellenamos el resto de la información
+    elements.medalPopupName.textContent = config.name;
+    elements.medalPopupDescription.textContent = config.description;
+
+    // Mostramos el popup
+    playSound('ui-click'); // Sonido al abrir
+    elements.medalDetailPopup.classList.remove('hidden');
+}
 
     function showMedalUnlockedPopup(medalName) {
         // Alerta temporal para probar la funcionalidad.
@@ -1166,33 +1208,28 @@ function switchProfileTab(activeTab) {
 
 function renderMedalGallery() {
     if (!elements.medalGalleryContainer) return;
-    elements.medalGalleryContainer.innerHTML = ''; // Limpiamos la galería
+    elements.medalGalleryContainer.innerHTML = ''; 
 
     for (const medalId in MEDAL_CONFIG) {
         const config = MEDAL_CONFIG[medalId];
-        
-        // Creamos el contenedor
-        const medalItem = document.createElement('div');
-        medalItem.className = 'medal-item'; // Clase base del contenedor (fondo, padding)
 
-        // Obtenemos el icono
+        // Convertimos el div en un botón para hacerlo interactivo
+        const medalButton = document.createElement('button'); 
+        medalButton.className = 'medal-item focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg'; // Añadimos estilos de botón
+        medalButton.onclick = () => showMedalDetails(medalId); // Llamamos a la nueva función al pulsar
+
         const medalIcon = getAvatarSvg(config.icon);
-        if (!medalIcon) continue; // Si el icono no existe, saltamos
+        if (!medalIcon) continue; 
 
-        // --- ESTA ES LA LÓGICA CORREGIDA ---
         const medalKey = `${medalId}_bronze`;
         if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
-            // DESBLOQUEADA: Aplicamos el color bronce AL CONTENEDOR
-            medalItem.classList.add('medal-bronze');
-            // La línea que forzaba el color en el icono (y causaba el bug) HA SIDO ELIMINADA.
+            medalButton.classList.add('medal-bronze'); // Aplicamos clase al botón
         } else {
-            // BLOQUEADA: Aplicamos el color gris AL CONTENEDOR
-            medalItem.classList.add('medal-locked');
-            // La línea que forzaba el color en el icono (y causaba el bug) HA SIDO ELIMINADA.
+            medalButton.classList.add('medal-locked'); // Aplicamos clase al botón
         }
-        
-        medalItem.appendChild(medalIcon);
-        elements.medalGalleryContainer.appendChild(medalItem);
+
+        medalButton.appendChild(medalIcon);
+        elements.medalGalleryContainer.appendChild(medalButton);
     }
 }
 
@@ -1330,7 +1367,12 @@ function renderMedalGallery() {
             switchProfileTab('medals');
             });
         }
-        
+        if (elements.closeMedalPopup) {
+    elements.closeMedalPopup.addEventListener('click', () => {
+        playSound('ui-click'); // Sonido al cerrar
+        elements.medalDetailPopup.classList.add('hidden');
+    });
+}
         if (elements.profileButton) {
             elements.profileButton.addEventListener('click', () => {
         playSound('ui-click');
@@ -1393,6 +1435,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
