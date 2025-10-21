@@ -147,20 +147,6 @@ function mainApp() {
 
     // --- CATÁLOGO DE LOGROS Y MEDALLAS ---
 const MEDAL_CONFIG = {
-        'habilidad_primer_3': {
-            name: "Primeros Pasos",
-            description: "Consigue tu primer +3.",
-            icon: 'avatar-shield', // Icono para esta medalla
-            milestone: 'totalThreePointers',
-            levels: { bronze: 1 }
-        },
-        'habilidad_primer_hit': {
-            name: "¡Bautismo de Fuego!",
-            description: "Consigue tu primer ¡HIT! (+5).",
-            icon: 'avatar-crown', // Icono para esta medalla
-            milestone: 'totalHits',
-            levels: { bronze: 1 }
-        },
         'habilidad_primer_capicua': {
             name: "Doble o Nada",
             description: "Consigue tu primer Capicúa (+2).",
@@ -168,6 +154,20 @@ const MEDAL_CONFIG = {
             milestone: 'totalCapicuas',
             levels: { bronze: 1 }
         }
+         'habilidad_primer_3': {
+            name: "Primeros Pasos",
+            description: "Consigue tu primer +3.",
+            icon: 'avatar-shield', // Icono para esta medalla
+            milestone: 'totalThreePointers',
+            levels: { bronze: 1 }
+        },
+         'habilidad_primer_hit': {
+            name: "¡Bautismo de Fuego!",
+            description: "Consigue tu primer ¡HIT! (+5).",
+            icon: 'avatar-crown', // Icono para esta medalla
+            milestone: 'totalHits',
+            levels: { bronze: 1 }
+        },
     };
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
@@ -1435,6 +1435,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
