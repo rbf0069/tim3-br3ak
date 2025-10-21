@@ -150,21 +150,21 @@ const MEDAL_CONFIG = {
         'habilidad_primer_3': {
             name: "Primeros Pasos",
             description: "Consigue tu primer +3.",
-            icon: 'avatar-triangle', // Icono para esta medalla
+            icon: 'avatar-shield', // Icono para esta medalla
             milestone: 'totalThreePointers',
             levels: { bronze: 1 }
         },
         'habilidad_primer_hit': {
             name: "¡Bautismo de Fuego!",
             description: "Consigue tu primer ¡HIT! (+5).",
-            icon: 'avatar-zap', // Icono para esta medalla
+            icon: 'avatar-crown', // Icono para esta medalla
             milestone: 'totalHits',
             levels: { bronze: 1 }
         },
         'habilidad_primer_capicua': {
             name: "Doble o Nada",
             description: "Consigue tu primer Capicúa (+2).",
-            icon: 'avatar-heart', // Icono para esta medalla
+            icon: 'avatar-zap', // Icono para esta medalla
             milestone: 'totalCapicuas',
             levels: { bronze: 1 }
         }
@@ -1435,6 +1435,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
