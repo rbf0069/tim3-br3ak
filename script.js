@@ -140,22 +140,25 @@ function mainApp() {
     let sessionStats = {};   // Para las estadísticas de la partida actual
 
     // --- CATÁLOGO DE LOGROS Y MEDALLAS ---
-    const MEDAL_CONFIG = {
+const MEDAL_CONFIG = {
         'habilidad_primer_3': {
             name: "Primeros Pasos",
             description: "Consigue tu primer +3.",
+            icon: 'avatar-triangle', // Icono para esta medalla
             milestone: 'totalThreePointers',
             levels: { bronze: 1 }
         },
         'habilidad_primer_hit': {
             name: "¡Bautismo de Fuego!",
             description: "Consigue tu primer ¡HIT! (+5).",
+            icon: 'avatar-zap', // Icono para esta medalla
             milestone: 'totalHits',
             levels: { bronze: 1 }
         },
         'habilidad_primer_capicua': {
             name: "Doble o Nada",
             description: "Consigue tu primer Capicúa (+2).",
+            icon: 'avatar-heart', // Icono para esta medalla
             milestone: 'totalCapicuas',
             levels: { bronze: 1 }
         }
@@ -404,12 +407,12 @@ function mainApp() {
         }
     }
 
-    function getAvatarSvg(avatarId) {
+function getAvatarSvg(avatarId) {
         const svgTemplate = document.getElementById(avatarId);
         if (!svgTemplate) return null;
         const svgClone = svgTemplate.cloneNode(true);
         svgClone.removeAttribute('id');
-        svgClone.setAttribute('class', 'w-full h-full text-gray-300');
+        svgClone.setAttribute('class', 'w-full h-full'); 
         return svgClone;
     }
 
@@ -1162,37 +1165,31 @@ function switchProfileTab(activeTab) {
 }
 
 function renderMedalGallery() {
-    if (!elements.medalGalleryContainer) return;
-    elements.medalGalleryContainer.innerHTML = ''; // Limpiamos la galería
+        if (!elements.medalGalleryContainer) return;
+        elements.medalGalleryContainer.innerHTML = ''; // Limpiamos la galería
 
-    // Recorremos nuestro catálogo de medallas
-    for (const medalId in MEDAL_CONFIG) {
-        const config = MEDAL_CONFIG[medalId];
-        
-        // Creamos el contenedor de la medalla
-        const medalItem = document.createElement('div');
-        medalItem.className = 'medal-item'; // Clase base que ya definimos
+        for (const medalId in MEDAL_CONFIG) {
+            const config = MEDAL_CONFIG[medalId];
+            
+            const medalItem = document.createElement('div');
+            medalItem.className = 'medal-item'; 
 
-        // Reutilizamos un icono de avatar como medalla (ej. 'avatar-star')
-        // Puedes cambiar 'avatar-star' por el icono que quieras para cada medalla
-        const medalIcon = getAvatarSvg('avatar-star'); 
+            // MEJORA: Usamos el icono específico de la medalla
+            const medalIcon = getAvatarSvg(config.icon); 
 
-        // Comprobamos si el jugador ha desbloqueado esta medalla
-        const medalKey = `${medalId}_bronze`;
-        if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
-            // Desbloqueada: aplicamos el color bronce
-            medalItem.classList.add('medal-bronze');
-        } else {
-            // Bloqueada: aplicamos el color gris
-            medalItem.classList.add('medal-locked');
+            const medalKey = `${medalId}_bronze`;
+            if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
+                medalItem.classList.add('medal-bronze');
+            } else {
+                medalItem.classList.add('medal-locked');
+            }
+
+            if (medalIcon) {
+                medalItem.appendChild(medalIcon);
+            }
+            elements.medalGalleryContainer.appendChild(medalItem);
         }
-
-        if (medalIcon) {
-            medalItem.appendChild(medalIcon);
-        }
-        elements.medalGalleryContainer.appendChild(medalItem);
     }
-}
 
     // --- 4. LÓGICA DE ARRANQUE ---
     async function startApp() {
@@ -1391,6 +1388,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
