@@ -1212,7 +1212,7 @@ function renderMedalGallery() {
 
     for (const medalId in MEDAL_CONFIG) {
         const config = MEDAL_CONFIG[medalId];
-
+        
         // Convertimos el div en un botón para hacerlo interactivo
         const medalButton = document.createElement('button'); 
         medalButton.className = 'medal-item focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg'; // Añadimos estilos de botón
@@ -1227,7 +1227,7 @@ function renderMedalGallery() {
         } else {
             medalButton.classList.add('medal-locked'); // Aplicamos clase al botón
         }
-
+        
         medalButton.appendChild(medalIcon);
         elements.medalGalleryContainer.appendChild(medalButton);
     }
@@ -1435,6 +1435,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
