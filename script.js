@@ -147,13 +147,14 @@ function mainApp() {
 
     // --- CATÁLOGO DE LOGROS Y MEDALLAS ---
 const MEDAL_CONFIG = {
+    
         'habilidad_primer_capicua': {
             name: "Doble o Nada",
             description: "Consigue tu primer Capicúa (+2).",
             icon: 'avatar-zap', // Icono para esta medalla
             milestone: 'totalCapicuas',
             levels: { bronze: 1 }
-        }
+        },
          'habilidad_primer_3': {
             name: "Primeros Pasos",
             description: "Consigue tu primer +3.",
@@ -1435,6 +1436,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
