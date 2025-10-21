@@ -115,16 +115,29 @@ body {
 .medal-locked {
     @apply bg-gray-900 text-gray-700 opacity-60;
 }
-
+/* FORZAMOS EL COLOR DEL ICONO SVG INTERIOR */
+.medal-locked svg {
+    stroke: #374151; /* Este es el color text-gray-700 */
+}
 /* Colores para medallas DESBLOQUEADAS */
 .medal-bronze {
     @apply bg-yellow-900/50 text-yellow-600;
 }
+/* FORZAMOS EL COLOR DEL ICONO SVG INTERIOR */
+.medal-bronze svg {
+    stroke: #ca8a04; /* Este es el color text-yellow-600 */
+}
 .medal-silver {
     @apply bg-gray-600/50 text-gray-300;
 }
+.medal-silver svg {
+    stroke: #D1D5DB; /* Este es el color text-gray-300 */
+}
+
 .medal-gold {
     @apply bg-yellow-700/50 text-yellow-400;
 }
-
+.medal-gold svg {
+    stroke: #FACC15; /* Este es el color text-yellow-400 */
+}
 
