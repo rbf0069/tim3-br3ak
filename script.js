@@ -170,9 +170,54 @@ const MEDAL_CONFIG = {
             levels: { bronze: 1 }
         },
     };
+    const LEVEL_CONFIG = [
+        { name: "Aprendiz", threshold: 0, colorClass: "border-yellow-700", bgColorClass: "bg-yellow-900/50" }, // Color madera claro
+        { name: "Bronce", threshold: 251, colorClass: "border-yellow-600", bgColorClass: "bg-yellow-900/50" },
+        { name: "Plata", threshold: 1501, colorClass: "border-gray-400", bgColorClass: "bg-gray-600/50" },
+        { name: "Oro", threshold: 10001, colorClass: "border-yellow-400", bgColorClass: "bg-yellow-700/50" },
+        { name: "Platino", threshold: 50001, colorClass: "border-cyan-400", bgColorClass: "bg-cyan-700/50" }, // Usamos Cian para Platino
+        { name: "Diamante", threshold: 100001, colorClass: "border-purple-400", bgColorClass: "bg-purple-700/50" }, // Usamos Púrpura para Diamante
+        { name: "Maestro", threshold: 250001, colorClass: "border-red-500", bgColorClass: "bg-red-800/50" }, // Rojo para Maestro
+        { name: "Deidad", threshold: 1000001, colorClass: "border-white", bgColorClass: "bg-gray-500/50" } // Blanco/Gris claro para Deidad
+    ];
 
     // --- 3. DEFINICIONES DE FUNCIONES ---
+    
+    function calculatePlayerLevel(totalScore) {
+        let currentLevel = LEVEL_CONFIG[0]; // Empezamos como Aprendiz
+        let nextLevel = LEVEL_CONFIG[1];
 
+        for (let i = 0; i < LEVEL_CONFIG.length; i++) {
+            if (totalScore >= LEVEL_CONFIG[i].threshold) {
+                currentLevel = LEVEL_CONFIG[i];
+                if (i + 1 < LEVEL_CONFIG.length) {
+                    nextLevel = LEVEL_CONFIG[i + 1];
+                } else {
+                    nextLevel = null; // Último nivel alcanzado
+                }
+            } else {
+                break; // Si no cumple el umbral, ya hemos encontrado el nivel
+            }
+        }
+        
+        // Calculamos el progreso hacia el siguiente nivel
+        let progressPercent = 0;
+        if (nextLevel) {
+            const pointsInCurrentLevel = totalScore - currentLevel.threshold;
+            const pointsNeededForNextLevel = nextLevel.threshold - currentLevel.threshold;
+            progressPercent = Math.min(100, Math.max(0, (pointsInCurrentLevel / pointsNeededForNextLevel) * 100));
+        } else {
+            progressPercent = 100; // Si es el último nivel, la barra está llena
+        }
+
+        return {
+            level: currentLevel,
+            nextLevel: nextLevel,
+            progress: progressPercent,
+            totalScore: totalScore
+        };
+    }
+    
     function showMedalDetails(medalId) {
     const config = MEDAL_CONFIG[medalId];
     if (!config || !elements.medalDetailPopup) return;
@@ -1436,6 +1481,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
