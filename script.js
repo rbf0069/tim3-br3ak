@@ -1525,14 +1525,3 @@ function renderMedalGallery() {
 // Punto de entrada inicial
 checkPasswordAndInit();
 
-
-
-
-
-
-
-
-
-
-
-
