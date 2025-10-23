@@ -123,6 +123,12 @@ function mainApp() {
         medalPopupName: document.getElementById('medal-popup-name'),
         medalPopupDescription: document.getElementById('medal-popup-description'),
         medalPopupStatus: document.getElementById('medal-popup-status'),
+        levelProgressSection: document.getElementById('level-progress-section'), 
+        currentLevelName: document.getElementById('current-level-name'),      
+        nextLevelName: document.getElementById('next-level-name'),         
+        progressBarFill: document.getElementById('progress-bar-fill'),     
+        currentTotalScore: document.getElementById('current-total-score'), 
+        nextLevelThreshold: document.getElementById('next-level-threshold'),
     };
 
     // --- 2. VARIABLES DE ESTADO ---
@@ -217,6 +223,41 @@ const MEDAL_CONFIG = {
             totalScore: totalScore
         };
     }
+
+
+        function updateLevelProgressUI() {
+            // Asegurarse de que los elementos y los hitos existen
+            if (!elements.levelProgressSection || !userMilestones) return;
+
+            // Calculamos el nivel actual y el progreso
+            const levelData = calculatePlayerLevel(userMilestones.totalScore || 0);
+
+            // Actualizamos los textos
+            elements.currentLevelName.textContent = levelData.level.name;
+            elements.currentTotalScore.textContent = levelData.totalScore;
+
+            // Actualizamos el color y el porcentaje de relleno de la barra de progreso
+            elements.progressBarFill.style.width = `${levelData.progress}%`;
+            // Eliminamos clases de color antiguas antes de añadir la nueva
+            LEVEL_CONFIG.forEach(lvl => elements.progressBarFill.classList.remove(lvl.bgColorClass));
+            elements.progressBarFill.classList.add(levelData.level.bgColorClass);
+
+            // Actualizamos la información del siguiente nivel
+            if (levelData.nextLevel) {
+                elements.nextLevelName.textContent = ` -> ${levelData.nextLevel.name}`;
+                elements.nextLevelThreshold.textContent = levelData.nextLevel.threshold;
+                elements.nextLevelName.classList.remove('hidden');
+                // Asegurarse de que el contenedor del umbral sea visible
+                elements.nextLevelThreshold.parentElement.classList.remove('hidden'); 
+            } else {
+                // El jugador está en el nivel máximo
+                elements.nextLevelName.classList.add('hidden'); // Ocultamos "-> SiguienteNivel"
+                // Ocultamos el texto "puntuación / umbral"
+                elements.nextLevelThreshold.parentElement.classList.add('hidden'); 
+                 // Opcional: Añadir estilo o texto específico para nivel máximo
+                elements.currentLevelName.textContent = `${levelData.level.name} (MAX)`;
+            }
+        }
     
     function showMedalDetails(medalId) {
     const config = MEDAL_CONFIG[medalId];
@@ -417,6 +458,7 @@ const MEDAL_CONFIG = {
             });
             userProfile = { nickname: newNickname, avatar: selectedAvatar };
             updateProfileButton();
+            updateLevelProgressUI();
             feedbackEl.textContent = "¡Perfil guardado!";
             feedbackEl.className = "text-center text-sm mt-2 h-4 text-green-500";
             playSound('ui-click');
@@ -1423,10 +1465,11 @@ function renderMedalGallery() {
             elements.profileButton.addEventListener('click', () => {
         playSound('ui-click');
         if (isAuthReady) {
-            // Preparamos la pantalla de perfil antes de mostrarla
             elements.nicknameInput.value = userProfile.nickname;
             selectedAvatar = userProfile.avatar;
             updateProfileUI(); 
+            updateLevelProgressUI();
+            switchProfileTab('edit');
             showScreen(elements.profileScreen);
             }
         });
@@ -1481,6 +1524,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
