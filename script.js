@@ -175,7 +175,20 @@ const MEDAL_CONFIG = {
             milestone: 'totalHits',
             levels: { bronze: 1 }
         },
+    'maestria_hits': {
+            name: "Coleccionista de HITs",
+            description: "Acumula HITs a lo largo de tu carrera.",
+            icon: 'avatar-crown', // Mantenemos la corona
+            milestone: 'totalHits',
+            levels: { 
+                bronze: 25,
+                silver: 100 // <-- AÑADE ESTA LÍNEA
+                // Oro y Platino se añadirán después
+            }
+        },
+        // --- (Añadiremos más medallas aquí después) ---
     };
+    
     const LEVEL_CONFIG = [
         { name: "Aprendiz", threshold: 0, colorClass: "border-yellow-700", bgColorClass: "bg-yellow-900/50" }, // Color madera claro
         { name: "Bronce", threshold: 251, colorClass: "border-yellow-600", bgColorClass: "bg-yellow-900/50" },
@@ -259,39 +272,75 @@ const MEDAL_CONFIG = {
             }
         }
     
-    function showMedalDetails(medalId) {
+// REEMPLAZA ESTA FUNCIÓN ENTERA
+function showMedalDetails(medalId) {
     const config = MEDAL_CONFIG[medalId];
     if (!config || !elements.medalDetailPopup) return;
 
-    // Limpiamos el icono anterior
     elements.medalPopupIcon.innerHTML = ''; 
     const medalIcon = getAvatarSvg(config.icon);
+    if (!medalIcon) return; // Salimos si el icono no existe
 
-    // Comprobamos el estado
-    const medalKey = `${medalId}_bronze`;
-    const isUnlocked = userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey];
+    // --- LÓGICA MEJORADA PARA NIVELES ---
+    let highestLevelUnlocked = null;
+    let nextLevelToShow = 'bronze'; // Por defecto, mostramos progreso a Bronce
+    const levelsInOrder = ['bronze', 'silver', 'gold', 'platinum']; 
+    
+    // Determinamos el nivel más alto y el siguiente nivel
+    for (let i = 0; i < levelsInOrder.length; i++) {
+        const level = levelsInOrder[i];
+        const medalKey = `${medalId}_${level}`;
+        if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
+            highestLevelUnlocked = level;
+            // Si hay un nivel siguiente definido en el config, ese es nuestro próximo objetivo
+            if (i + 1 < levelsInOrder.length && config.levels[levelsInOrder[i+1]]) {
+                 nextLevelToShow = levelsInOrder[i+1];
+            } else {
+                 nextLevelToShow = null; // Ya ha alcanzado el máximo nivel definido
+            }
+        } else {
+            // Si no tiene este nivel, este es el próximo objetivo (a menos que ya hayamos encontrado uno)
+            if (config.levels[level] && !highestLevelUnlocked) {
+                 nextLevelToShow = level;
+            }
+            break; // No necesitamos comprobar más niveles
+        }
+    }
 
-    // Coloreamos el icono del popup
-    if (isUnlocked) {
-        medalIcon.classList.add('text-yellow-600'); // Color bronce
-        elements.medalPopupStatus.textContent = "¡CONSEGUIDA!";
-        elements.medalPopupStatus.className = "mt-4 text-lg font-semibold text-yellow-400";
+    // Coloreamos el icono del popup según el nivel más alto alcanzado
+    if (highestLevelUnlocked) {
+        // Usamos las clases CSS que ya tenemos (medal-bronze, medal-silver...)
+        // Nota: Necesitamos extraer el color de texto de esas clases o definirlos aquí
+        // Por ahora, aplicamos directamente la clase al icono para heredar si es posible (puede fallar)
+         medalIcon.classList.add(`text-${config.levels[highestLevelUnlocked].color || 'yellow-600'}`); // Color provisional
+         elements.medalPopupStatus.textContent = `¡Nivel ${highestLevelUnlocked.toUpperCase()}!`;
+         elements.medalPopupStatus.className = `mt-4 text-lg font-semibold text-${config.levels[highestLevelUnlocked].textColor || 'yellow-400'}`; // Color provisional
     } else {
         medalIcon.classList.add('text-gray-700'); // Color bloqueado
         elements.medalPopupStatus.textContent = "BLOQUEADA";
         elements.medalPopupStatus.className = "mt-4 text-lg font-semibold text-gray-500";
     }
+    
+    elements.medalPopupIcon.appendChild(medalIcon);
 
-    if (medalIcon) {
-        elements.medalPopupIcon.appendChild(medalIcon);
+    // Rellenamos nombre y descripción base
+    elements.medalPopupName.textContent = config.name;
+    
+    // Mostramos el progreso hacia el SIGUIENTE nivel
+    if (nextLevelToShow && config.levels[nextLevelToShow]) {
+        const requirement = config.levels[nextLevelToShow];
+        const playerProgress = userMilestones[config.milestone] || 0;
+        const nextLevelNameCapitalized = nextLevelToShow.charAt(0).toUpperCase() + nextLevelToShow.slice(1);
+        elements.medalPopupDescription.textContent = `Próximo Nivel (${nextLevelNameCapitalized}): ${requirement} ${config.milestone.replace('total', '')} (${playerProgress}/${requirement})`;
+    } else if (highestLevelUnlocked) {
+         elements.medalPopupDescription.textContent = "¡Has alcanzado el nivel máximo para esta medalla!";
+    } else {
+         elements.medalPopupDescription.textContent = config.description; // Descripción base si aún no tiene bronce
     }
 
-    // Rellenamos el resto de la información
-    elements.medalPopupName.textContent = config.name;
-    elements.medalPopupDescription.textContent = config.description;
+    // --- FIN LÓGICA MEJORADA ---
 
-    // Mostramos el popup
-    playSound('ui-click'); // Sonido al abrir
+    playSound('ui-click'); 
     elements.medalDetailPopup.classList.remove('hidden');
 }
 
@@ -1561,6 +1610,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
