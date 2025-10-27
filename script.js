@@ -587,11 +587,32 @@ function updateProfileButton() {
         }
     }
 
+// REEMPLAZA ESTA FUNCIÓN ENTERA
     function updateProfileUI() {
         if (!elements.currentAvatarDisplay || !elements.avatarGallery) return;
+
+        // --- INICIO DE LA MEJORA ---
+        // 1. Calculamos el nivel actual del jugador
+        const levelData = calculatePlayerLevel(userMilestones.totalScore || 0);
+        const borderColorClass = levelData.level.colorClass;
+
+        // 2. Limpiamos bordes anteriores y aplicamos el nuevo al contenedor del avatar grande
+        LEVEL_CONFIG.forEach(lvl => elements.currentAvatarDisplay.classList.remove(lvl.colorClass)); // Limpia colores
+        elements.currentAvatarDisplay.classList.remove('border-2', 'border-solid'); // Limpia borde base si existiera
+
+        // Aplicamos el borde base y el color del nivel actual (solo si hay perfil)
+        if (userProfile.nickname) { // Aplicamos borde solo si el perfil está creado
+             elements.currentAvatarDisplay.classList.add('border-4', 'border-solid', borderColorClass); // Usamos border-4 para que sea más grueso aquí
+        }
+        // --- FIN DE LA MEJORA ---
+
+
+        // Actualizamos el SVG del avatar (código existente)
         elements.currentAvatarDisplay.innerHTML = '';
         const avatar = getAvatarSvg(selectedAvatar);
         if (avatar) elements.currentAvatarDisplay.appendChild(avatar);
+
+        // Actualizamos la selección en la galería (código existente)
         const galleryAvatars = elements.avatarGallery.children;
         for (const avatarEl of galleryAvatars) {
             if (avatarEl.dataset.avatarId === selectedAvatar) {
@@ -1540,5 +1561,6 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
