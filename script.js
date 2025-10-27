@@ -180,9 +180,8 @@ const MEDAL_CONFIG = {
             description: "Acumula HITs a lo largo de tu carrera.",
             icon: 'avatar-crown', // Mantenemos la corona
             milestone: 'totalHits',
-            levels: { 
-                bronze: 25,
-                silver: 100 // <-- AÑADE ESTA LÍNEA
+            levels: { bronze: 5, silver: 25, gold: 100, platinum: 500 } // USAMOS TU ESCALA APROBADA
+},
                 // Oro y Platino se añadirán después
             }
         },
@@ -272,78 +271,95 @@ const MEDAL_CONFIG = {
             }
         }
     
-// REEMPLAZA ESTA FUNCIÓN ENTERA
 function showMedalDetails(medalId) {
     const config = MEDAL_CONFIG[medalId];
     if (!config || !elements.medalDetailPopup) return;
 
-    elements.medalPopupIcon.innerHTML = ''; 
+    elements.medalPopupIcon.innerHTML = '';
     const medalIcon = getAvatarSvg(config.icon);
-    if (!medalIcon) return; // Salimos si el icono no existe
+    if (!medalIcon) return;
 
-    // --- LÓGICA MEJORADA PARA NIVELES ---
     let highestLevelUnlocked = null;
-    let nextLevelToShow = 'bronze'; // Por defecto, mostramos progreso a Bronce
-    const levelsInOrder = ['bronze', 'silver', 'gold', 'platinum']; 
-    
-    // Determinamos el nivel más alto y el siguiente nivel
+    let nextLevelData = null; // Guardará { name: 'bronze', req: 5 }
+    const levelsInOrder = ['bronze', 'silver', 'gold', 'platinum'];
+    const playerProgress = userMilestones[config.milestone] || 0;
+
+    // 1. Determinar nivel actual y SIGUIENTE NIVEL ALCANZABLE
     for (let i = 0; i < levelsInOrder.length; i++) {
         const level = levelsInOrder[i];
         const medalKey = `${medalId}_${level}`;
-        if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
-            highestLevelUnlocked = level;
-            // Si hay un nivel siguiente definido en el config, ese es nuestro próximo objetivo
-            if (i + 1 < levelsInOrder.length && config.levels[levelsInOrder[i+1]]) {
-                 nextLevelToShow = levelsInOrder[i+1];
-            } else {
-                 nextLevelToShow = null; // Ya ha alcanzado el máximo nivel definido
+        
+        // Solo consideramos niveles definidos en MEDAL_CONFIG para esta medalla
+        if (config.levels && config.levels[level]) {
+            const requirement = config.levels[level];
+            
+            if (userMilestones.unlockedMedals && userMilestones.unlockedMedals[medalKey]) {
+                highestLevelUnlocked = level; // Actualizamos el nivel más alto conseguido
+            } else if (!nextLevelData) {
+                // Si este nivel existe Y no lo hemos desbloqueado Y aún no hemos encontrado el próximo objetivo
+                // Este es el siguiente nivel a alcanzar
+                nextLevelData = { name: level, req: requirement };
             }
-        } else {
-            // Si no tiene este nivel, este es el próximo objetivo (a menos que ya hayamos encontrado uno)
-            if (config.levels[level] && !highestLevelUnlocked) {
-                 nextLevelToShow = level;
-            }
-            break; // No necesitamos comprobar más niveles
         }
     }
+    // Si hemos desbloqueado todos los niveles definidos, no hay 'nextLevel'
+    if (highestLevelUnlocked && !nextLevelData) {
+         // (No hacemos nada, el bucle ya habrá terminado sin asignar nextLevelData)
+    } else if (!highestLevelUnlocked && !nextLevelData && config.levels.bronze) {
+         // Si no tiene nada desbloqueado y hay nivel bronce, ese es el objetivo
+         nextLevelData = { name: 'bronze', req: config.levels.bronze };
+    }
 
-    // Coloreamos el icono del popup según el nivel más alto alcanzado
+
+    // 2. Colorear icono y estado (Basado en highestLevelUnlocked)
     if (highestLevelUnlocked) {
-        // Usamos las clases CSS que ya tenemos (medal-bronze, medal-silver...)
-        // Nota: Necesitamos extraer el color de texto de esas clases o definirlos aquí
-        // Por ahora, aplicamos directamente la clase al icono para heredar si es posible (puede fallar)
-         medalIcon.classList.add(`text-${config.levels[highestLevelUnlocked].color || 'yellow-600'}`); // Color provisional
-         elements.medalPopupStatus.textContent = `¡Nivel ${highestLevelUnlocked.toUpperCase()}!`;
-         elements.medalPopupStatus.className = `mt-4 text-lg font-semibold text-${config.levels[highestLevelUnlocked].textColor || 'yellow-400'}`; // Color provisional
+        medalIcon.classList.add(`text-${getColorForLevel(highestLevelUnlocked)}`);
+        elements.medalPopupStatus.textContent = `¡Nivel ${highestLevelUnlocked.toUpperCase()}!`;
+        elements.medalPopupStatus.className = `mt-4 text-lg font-semibold text-${getTextColorForLevel(highestLevelUnlocked)}`;
     } else {
-        medalIcon.classList.add('text-gray-700'); // Color bloqueado
+        medalIcon.classList.add('text-gray-700');
         elements.medalPopupStatus.textContent = "BLOQUEADA";
         elements.medalPopupStatus.className = "mt-4 text-lg font-semibold text-gray-500";
     }
-    
     elements.medalPopupIcon.appendChild(medalIcon);
 
-    // Rellenamos nombre y descripción base
+    // 3. Rellenar nombre y descripción/progreso (Basado en nextLevelData)
     elements.medalPopupName.textContent = config.name;
-    
-    // Mostramos el progreso hacia el SIGUIENTE nivel
-    if (nextLevelToShow && config.levels[nextLevelToShow]) {
-        const requirement = config.levels[nextLevelToShow];
-        const playerProgress = userMilestones[config.milestone] || 0;
-        const nextLevelNameCapitalized = nextLevelToShow.charAt(0).toUpperCase() + nextLevelToShow.slice(1);
-        elements.medalPopupDescription.textContent = `Próximo Nivel (${nextLevelNameCapitalized}): ${requirement} ${config.milestone.replace('total', '')} (${playerProgress}/${requirement})`;
+
+    if (nextLevelData) {
+        const nextLevelNameCapitalized = nextLevelData.name.charAt(0).toUpperCase() + nextLevelData.name.slice(1);
+        elements.medalPopupDescription.textContent = `Próximo Nivel (${nextLevelNameCapitalized}): ${nextLevelData.req} ${config.milestone.replace('total', '')} (${playerProgress}/${nextLevelData.req})`;
     } else if (highestLevelUnlocked) {
-         elements.medalPopupDescription.textContent = "¡Has alcanzado el nivel máximo para esta medalla!";
+        // Si tiene un nivel desbloqueado pero no hay 'nextLevelData', ha llegado al máximo DEFINIDO
+        elements.medalPopupDescription.textContent = "¡Has alcanzado el nivel máximo para esta medalla!";
     } else {
-         elements.medalPopupDescription.textContent = config.description; // Descripción base si aún no tiene bronce
+         // Si no tiene nivel y tampoco hay próximo (raro), descripción base
+         elements.medalPopupDescription.textContent = config.description || `Completa los requisitos para desbloquearla.`;
     }
 
-    // --- FIN LÓGICA MEJORADA ---
-
-    playSound('ui-click'); 
+    playSound('ui-click');
     elements.medalDetailPopup.classList.remove('hidden');
 }
 
+// ASEGÚRATE DE TENER ESTAS FUNCIONES HELPER TAMBIÉN
+function getColorForLevel(level) {
+    switch (level) {
+        case 'bronze': return 'yellow-600';
+        case 'silver': return 'gray-300';
+        case 'gold': return 'yellow-400';
+        case 'platinum': return 'cyan-400';
+        default: return 'gray-700';
+    }
+}
+function getTextColorForLevel(level) {
+     switch (level) {
+        case 'bronze': return 'yellow-400';
+        case 'silver': return 'gray-100';
+        case 'gold': return 'yellow-300';
+        case 'platinum': return 'cyan-300';
+        default: return 'gray-500';
+    }
+}
     function showMedalUnlockedPopup(medalName) {
         // Alerta temporal para probar la funcionalidad.
         alert(`¡MEDALLA DESBLOQUEADA!\n\n${medalName}`);
@@ -1610,6 +1626,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
