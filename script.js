@@ -546,30 +546,46 @@ function getAvatarSvg(avatarId) {
         return svgClone;
     }
 
-    function updateProfileButton() {
+function updateProfileButton() {
         if (!elements.profileButton) return;
         elements.profileButton.innerHTML = ''; // Limpiamos el botón
-        if (userProfile.nickname) {
-        const avatarContainer = document.createElement('div');
-        avatarContainer.className = 'w-8 h-8'; // Un poco más grande para el botón
-        const avatar = getAvatarSvg(userProfile.avatar);
-        if (avatar) {
-            avatarContainer.appendChild(avatar);
-        }
-        elements.profileButton.appendChild(avatarContainer);
 
-        const nickEl = document.createElement('span');
-        nickEl.className = 'text-lg font-semibold text-gray-300';
-        nickEl.textContent = userProfile.nickname;
-        elements.profileButton.appendChild(nickEl);
-    } else {
-        // Texto provisional si no hay perfil
-        const placeholderText = document.createElement('span');
-        placeholderText.className = 'text-gray-400';
-        placeholderText.textContent = `Crea tu Perfil`;
-        elements.profileButton.appendChild(placeholderText);
+        // --- INICIO DE LA MEJORA ---
+        // 1. Calculamos el nivel actual del jugador
+        const levelData = calculatePlayerLevel(userMilestones.totalScore || 0);
+        const borderColorClass = levelData.level.colorClass; // Ej: "border-yellow-600"
+
+        // 2. Limpiamos bordes anteriores y aplicamos el nuevo
+        // Quitamos cualquier clase de borde anterior
+        LEVEL_CONFIG.forEach(lvl => elements.profileButton.classList.remove(lvl.colorClass));
+        // Aplicamos la clase base del borde y el color del nivel actual
+        elements.profileButton.classList.add('border-2', 'border-solid', borderColorClass);
+        // --- FIN DE LA MEJORA ---
+
+        if (userProfile.nickname) {
+            const avatarContainer = document.createElement('div');
+            // Hacemos el contenedor del avatar un poco más pequeño para que se vea el borde
+            avatarContainer.className = 'w-7 h-7';
+            const avatar = getAvatarSvg(userProfile.avatar);
+            if (avatar) {
+                avatarContainer.appendChild(avatar);
+            }
+            elements.profileButton.appendChild(avatarContainer);
+
+            const nickEl = document.createElement('span');
+            nickEl.className = 'text-lg font-semibold text-gray-300';
+            nickEl.textContent = userProfile.nickname;
+            elements.profileButton.appendChild(nickEl);
+        } else {
+            // Texto provisional si no hay perfil
+            const placeholderText = document.createElement('span');
+            placeholderText.className = 'text-gray-400';
+            placeholderText.textContent = `Crea tu Perfil`;
+            elements.profileButton.appendChild(placeholderText);
+            // Si no hay perfil, quitamos el borde para que no se vea raro
+            elements.profileButton.classList.remove('border-2', 'border-solid', borderColorClass);
+        }
     }
-}
 
     function updateProfileUI() {
         if (!elements.currentAvatarDisplay || !elements.avatarGallery) return;
@@ -1524,4 +1540,5 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
