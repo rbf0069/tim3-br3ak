@@ -183,7 +183,6 @@ const MEDAL_CONFIG = {
             levels: { bronze: 5, silver: 25, gold: 100, platinum: 500 } // USAMOS TU ESCALA APROBADA
         },
                 // Oro y Platino se añadirán después
-        },
         // --- (Añadiremos más medallas aquí después) ---
     };
     
@@ -1625,6 +1624,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
