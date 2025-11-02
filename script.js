@@ -171,14 +171,14 @@ const MEDAL_CONFIG = {
          'habilidad_primer_hit': {
             name: "¡Bautismo de Fuego!",
             description: "Consigue tu primer ¡HIT! (+5).",
-            icon: 'avatar-crown', // Icono para esta medalla
+            icon: 'avatar-star', // Icono para esta medalla
             milestone: 'totalHits',
             levels: { bronze: 1 }
         },
     'maestria_hits': {
             name: "Coleccionista de HITs",
             description: "Acumula HITs a lo largo de tu carrera.",
-            icon: 'avatar-crown', // Mantenemos la corona
+            icon: 'avatar-crown', // Icono para esta medalla
             milestone: 'totalHits',
             levels: { bronze: 5, silver: 25, gold: 100, platinum: 500 } // USAMOS TU ESCALA APROBADA
         },
@@ -1641,6 +1641,7 @@ function renderMedalGallery() {
 
 // Punto de entrada inicial
 checkPasswordAndInit();
+
 
 
 
